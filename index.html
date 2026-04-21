@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Our HQ — Sashankh & Spoorthi</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #ffffff; --bg2: #f5f5f3; --bg3: #efefec;
+    --text: #1a1a18; --text2: #6b6b67; --text3: #9b9b96;
+    --border: rgba(0,0,0,0.1); --border2: rgba(0,0,0,0.18);
+    --danger: #c0392b; --success: #1D9E75;
+    --rad: 8px; --radlg: 12px;
+    --blue: #378ADD; --blue-bg: #E6F1FB; --blue-text: #185FA5;
+    --pink: #D4537E; --pink-bg: #FBEAF0; --pink-text: #993556;
+    --teal-bg: #E1F5EE; --teal-text: #0F6E56;
+    --amber-bg: #FAEEDA; --amber-text: #854F0B;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1e1e1c; --bg2: #2a2a28; --bg3: #323230;
+      --text: #f0f0ec; --text2: #a0a09a; --text3: #6b6b66;
+      --border: rgba(255,255,255,0.1); --border2: rgba(255,255,255,0.18);
+      --blue-bg: #0c2a4a; --blue-text: #85B7EB;
+      --pink-bg: #3a1628; --pink-text: #ED93B1;
+      --teal-bg: #062a1e; --teal-text: #5DCAA5;
+      --amber-bg: #2e1e06; --amber-text: #FAC775;
+    }
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg3); color: var(--text); min-height: 100vh; padding: 1.5rem; }
+  .container { max-width: 900px; margin: 0 auto; }
+  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+  .header h1 { font-size: 22px; font-weight: 500; }
+  .header-date { font-size: 13px; color: var(--text3); margin-top: 2px; }
+  .avatars { display: flex; gap: 10px; align-items: center; }
+  .avatar-group { display: flex; align-items: center; gap: 6px; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; }
+  .avatar-s { background: var(--blue-bg); color: var(--blue-text); }
+  .avatar-sp { background: var(--pink-bg); color: var(--pink-text); }
+  .avatar-name { font-size: 13px; color: var(--text2); }
+  .divider-v { width: 1px; height: 20px; background: var(--border); }
+  .stat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 1.5rem; }
+  .stat { background: var(--bg2); border-radius: var(--rad); padding: 0.875rem 1rem; }
+  .stat-label { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+  .stat-val { font-size: 22px; font-weight: 500; }
+  .stat-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .two-col { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin-bottom: 1.5rem; }
+  .card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radlg); padding: 1rem 1.25rem; }
+  .card-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .sec-label { font-size: 11px; font-weight: 500; color: var(--text3); letter-spacing: 0.06em; text-transform: uppercase; }
+  .goal-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 0.5px solid var(--border); }
+  .goal-row:last-child { border-bottom: none; }
+  .goal-name { flex: 1; font-size: 13px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .badge { font-size: 11px; padding: 2px 7px; border-radius: 20px; flex-shrink: 0; white-space: nowrap; }
+  .bs { background: var(--teal-bg); color: var(--teal-text); }
+  .by { background: var(--blue-bg); color: var(--blue-text); }
+  .bw { background: var(--pink-bg); color: var(--pink-text); }
+  .bns { background: var(--bg2); color: var(--text2); }
+  .bip { background: var(--amber-bg); color: var(--amber-text); }
+  .task-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 0.5px solid var(--border); }
+  .task-row:last-child { border-bottom: none; }
+  .chk { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--border2); flex-shrink: 0; cursor: pointer; transition: all 0.15s; background: transparent; position: relative; }
+  .chk.on { background: var(--success); border-color: var(--success); }
+  .chk.on::after { content: ''; position: absolute; left: 3px; top: 1px; width: 6px; height: 9px; border: 1.5px solid white; border-top: none; border-left: none; transform: rotate(45deg); }
+  .tlbl { flex: 1; font-size: 13px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tlbl.done { text-decoration: line-through; color: var(--text3); }
+  .tdate { font-size: 11px; color: var(--text3); flex-shrink: 0; }
+  .tdate.overdue { color: var(--danger); font-weight: 500; }
+  .habit-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radlg); padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
+  .habit-grid { display: grid; grid-template-columns: 1fr 90px 90px; }
+  .hdr-cell { font-size: 11px; color: var(--text2); text-align: center; padding-bottom: 8px; border-bottom: 0.5px solid var(--border); }
+  .hname { font-size: 13px; padding: 9px 0; border-bottom: 0.5px solid var(--border); }
+  .hname:last-child { border-bottom: none; }
+  .hchk { display: flex; align-items: center; justify-content: center; padding: 7px 0; border-bottom: 0.5px solid var(--border); }
+  .hchk:last-child { border-bottom: none; }
+  .vs-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radlg); padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
+  .score-row { display: flex; align-items: center; margin-bottom: 14px; }
+  .player { flex: 1; }
+  .p-name { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+  .p-score { font-size: 36px; font-weight: 500; line-height: 1; }
+  .p-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .vs-mid { padding: 0 16px; font-size: 13px; color: var(--text3); }
+  .leader-banner { background: var(--bg2); border-radius: var(--rad); padding: 8px 14px; text-align: center; font-size: 13px; margin-bottom: 16px; }
+  .legend { display: flex; gap: 14px; margin-bottom: 14px; }
+  .ldot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+  .hbar-row { margin-bottom: 10px; }
+  .hbar-row:last-child { margin-bottom: 0; }
+  .hbar-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--text2); margin-bottom: 4px; gap: 8px; }
+  .hbar-track { height: 8px; background: var(--bg2); border-radius: 4px; overflow: hidden; display: flex; }
+  .hbar-s { height: 100%; background: var(--blue); transition: width 0.4s; }
+  .hbar-sp { height: 100%; background: var(--pink); transition: width 0.4s; }
+  .add-row { display: flex; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 0.5px solid var(--border); }
+  .add-row input, .add-row select { font-size: 13px; padding: 6px 10px; border: 0.5px solid var(--border2); border-radius: var(--rad); background: var(--bg2); color: var(--text); font-family: inherit; outline: none; }
+  .add-row input { flex: 1; }
+  .add-row button { font-size: 13px; padding: 6px 14px; border-radius: var(--rad); border: 0.5px solid var(--border2); background: transparent; color: var(--text); cursor: pointer; font-family: inherit; }
+  .add-row button:hover { background: var(--bg2); }
+  .notion-link { font-size: 11px; color: var(--blue-text); text-decoration: none; flex-shrink: 0; }
+  .notion-link:hover { text-decoration: underline; }
+  @media (max-width: 600px) {
+    .stat-grid { grid-template-columns: repeat(2,1fr); }
+    .two-col { grid-template-columns: 1fr; }
+    body { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div>
+      <h1>Our HQ</h1>
+      <div class="header-date" id="today-date"></div>
+    </div>
+    <div class="avatars">
+      <div class="avatar-group"><div class="avatar avatar-s">S</div><span class="avatar-name">Sashankh</span></div>
+      <div class="divider-v"></div>
+      <div class="avatar-group"><div class="avatar avatar-sp">Sp</div><span class="avatar-name">Spoorthi</span></div>
+    </div>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat"><div class="stat-label">Active goals</div><div class="stat-val" id="kpi-goals">2</div><div class="stat-sub">in progress</div></div>
+    <div class="stat"><div class="stat-label">Overdue tasks</div><div class="stat-val" id="kpi-overdue">1</div><div class="stat-sub">needs attention</div></div>
+    <div class="stat"><div class="stat-label">Both done today</div><div class="stat-val" id="kpi-both">0/1</div><div class="stat-sub">habits completed</div></div>
+    <div class="stat"><div class="stat-label">Current leader</div><div class="stat-val" id="kpi-leader" style="font-size:16px;padding-top:3px;">Tied!</div><div class="stat-sub" id="kpi-leader-sub">this week</div></div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-hdr"><span class="sec-label">Goals</span></div>
+      <div id="goals-list"></div>
+      <div class="add-row">
+        <input type="text" id="new-goal-name" placeholder="New goal...">
+        <select id="new-goal-owner"><option value="shared">Shared</option><option value="sashankh">Sashankh</option><option value="spoorthi">Spoorthi</option></select>
+        <button onclick="addGoal()">+ Add</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><span class="sec-label">Tasks</span></div>
+      <div id="tasks-list"></div>
+      <div class="add-row">
+        <input type="text" id="new-task-name" placeholder="New task...">
+        <select id="new-task-assignee"><option value="sashankh">Sashankh</option><option value="spoorthi">Spoorthi</option><option value="shared">Shared</option></select>
+        <button onclick="addTask()">+ Add</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="habit-card">
+    <div class="card-hdr">
+      <span class="sec-label">Today's habits</span>
+      <span style="font-size:12px;color:var(--text3);" id="habits-summary"></span>
+    </div>
+    <div class="habit-grid">
+      <div></div>
+      <div class="hdr-cell" style="color:var(--blue-text);">Sashankh</div>
+      <div class="hdr-cell" style="color:var(--pink-text);">Spoorthi</div>
+      <div id="h-names"></div>
+      <div id="h-s"></div>
+      <div id="h-sp"></div>
+    </div>
+    <div class="add-row" style="margin-top:14px;">
+      <input type="text" id="new-habit-name" placeholder="New habit...">
+      <button onclick="addHabit()">+ Add habit</button>
+    </div>
+  </div>
+
+  <div class="vs-card">
+    <div class="card-hdr"><span class="sec-label">Head-to-head</span><span style="font-size:12px;color:var(--text3);">This week</span></div>
+    <div class="score-row">
+      <div class="player">
+        <div class="p-name" style="color:var(--blue-text);">Sashankh</div>
+        <div class="p-score" style="color:var(--blue-text);" id="vs-s">0</div>
+        <div class="p-sub">habits done</div>
+      </div>
+      <div class="vs-mid">vs</div>
+      <div class="player" style="text-align:right;">
+        <div class="p-name" style="color:var(--pink-text);">Spoorthi</div>
+        <div class="p-score" style="color:var(--pink-text);" id="vs-sp">0</div>
+        <div class="p-sub">habits done</div>
+      </div>
+    </div>
+    <div class="leader-banner" id="leader-banner"></div>
+    <div class="legend">
+      <span style="display:flex;align-items:center;"><span class="ldot" style="background:var(--blue);"></span><span style="font-size:12px;color:var(--text2);">Sashankh</span></span>
+      <span style="display:flex;align-items:center;"><span class="ldot" style="background:var(--pink);"></span><span style="font-size:12px;color:var(--text2);">Spoorthi</span></span>
+    </div>
+    <div id="vs-bars"></div>
+  </div>
+
+</div>
+<script>
+document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+
+/* ============================================================
+   DATA — Last synced from Notion: 21 Apr 2026
+   To update: export CSVs from Notion and share in chat
+   ============================================================ */
+const goals = [
+  {id:1,name:'New Home Setup',owner:'shared',status:'Not started',color:'#1D9E75',url:'https://www.notion.so/3496dad6b4eb80b4900df682f6551ffb'},
+  {id:2,name:'Blume Setup',owner:'spoorthi',status:'In progress',color:'#D4537E',url:'https://www.notion.so/3496dad6b4eb8073b9c6de9b3b8538f9'}
+];
+const tasks = [
+  {id:1,label:'Setup Internet',assignee:'sashankh',goal:'New Home Setup',date:'May 31',overdue:false,done:false,url:'https://www.notion.so/3496dad6b4eb80838835d232a4f50e33'},
+  {id:2,label:'Buy beds',assignee:'sashankh',goal:'New Home Setup',date:'May 31',overdue:false,done:false,url:'https://www.notion.so/3496dad6b4eb808db90bf57469bcc428'},
+  {id:3,label:'Raise the KYC request',assignee:'spoorthi',goal:'Blume Setup',date:'Apr 21',overdue:true,done:false,url:'https://www.notion.so/3496dad6b4eb802ab9ecc5d088b262fa'}
+];
+const habits = [
+  {id:0,name:'Go to Gym',s:false,sp:false,weekS:0,weekSp:0}
+];
+let ng=10,nt=20,nh=10;
+/* ============================================================ */
+
+const ownerBadge=o=>o==='shared'?'<span class="badge bs">Shared</span>':o==='sashankh'?'<span class="badge by">Sashankh</span>':'<span class="badge bw">Spoorthi</span>';
+const statusBadge=s=>s==='In progress'?'<span class="badge bip">In progress</span>':s==='Done'?'<span class="badge bs">Done</span>':'<span class="badge bns">Not started</span>';
+
+function renderGoals(){
+  document.getElementById('goals-list').innerHTML=goals.map(g=>`
+    <div class="goal-row">
+      ${ownerBadge(g.owner)}
+      <span class="goal-name" title="${g.name}">${g.name}</span>
+      ${statusBadge(g.status)}
+      <a class="notion-link" href="${g.url}" target="_blank">Open ↗</a>
+    </div>`).join('');
+  document.getElementById('kpi-goals').textContent=goals.length;
+}
+
+function renderTasks(){
+  document.getElementById('tasks-list').innerHTML=tasks.map((t,i)=>`
+    <div class="task-row">
+      <div class="chk${t.done?' on':''}" onclick="toggleTask(${i})"></div>
+      <span class="tlbl${t.done?' done':''}" title="${t.label}">${t.label}</span>
+      ${ownerBadge(t.assignee)}
+      <span class="tdate${t.overdue&&!t.done?' overdue':''}">${t.overdue&&!t.done?'Overdue':t.date}</span>
+    </div>`).join('');
+  const od=tasks.filter(t=>t.overdue&&!t.done).length;
+  const el=document.getElementById('kpi-overdue');
+  el.textContent=od;
+  el.style.color=od>0?'var(--danger)':'var(--text)';
+}
+
+function toggleTask(i){tasks[i].done=!tasks[i].done;renderTasks();}
+
+function renderHabits(){
+  document.getElementById('h-names').innerHTML=habits.map(h=>`<div class="hname">${h.name}</div>`).join('');
+  document.getElementById('h-s').innerHTML=habits.map(h=>`<div class="hchk"><div class="chk${h.s?' on':''}" onclick="toggleHabit(${h.id},'s')"></div></div>`).join('');
+  document.getElementById('h-sp').innerHTML=habits.map(h=>`<div class="hchk"><div class="chk${h.sp?' on':''}" onclick="toggleHabit(${h.id},'sp')"></div></div>`).join('');
+  const both=habits.filter(h=>h.s&&h.sp).length;
+  document.getElementById('habits-summary').textContent=`${both} of ${habits.length} both done`;
+  document.getElementById('kpi-both').textContent=`${both}/${habits.length}`;
+}
+
+function toggleHabit(id,person){
+  const h=habits.find(x=>x.id===id);if(!h)return;
+  if(person==='s'){h.s=!h.s;h.weekS=Math.max(0,h.weekS+(h.s?1:-1));}
+  else{h.sp=!h.sp;h.weekSp=Math.max(0,h.weekSp+(h.sp?1:-1));}
+  renderHabits();renderVs();updateLeaderKPI();
+}
+
+function renderVs(){
+  const sT=habits.reduce((a,h)=>a+h.weekS,0),spT=habits.reduce((a,h)=>a+h.weekSp,0);
+  document.getElementById('vs-s').textContent=sT;
+  document.getElementById('vs-sp').textContent=spT;
+  const b=document.getElementById('leader-banner');
+  if(sT>spT){b.textContent=`Sashankh leads by ${sT-spT} — keep it up!`;b.style.color='var(--blue-text)';}
+  else if(spT>sT){b.textContent=`Spoorthi leads by ${spT-sT} — time to catch up, Sashankh!`;b.style.color='var(--pink-text)';}
+  else{b.textContent='Tied — check off your habits to take the lead!';b.style.color='var(--text)';}
+  document.getElementById('vs-bars').innerHTML=habits.map(h=>{
+    const tot=h.weekS+h.weekSp,sw=tot>0?Math.round((h.weekS/tot)*100):50;
+    return`<div class="hbar-row"><div class="hbar-labels"><span>${h.name}</span><div style="display:flex;gap:6px;"><span style="color:var(--blue-text);font-weight:500;">${h.weekS}</span><span style="color:var(--text3);">|</span><span style="color:var(--pink-text);font-weight:500;">${h.weekSp}</span></div></div><div class="hbar-track"><div class="hbar-s" style="width:${sw}%;"></div><div class="hbar-sp" style="width:${100-sw}%;"></div></div></div>`;
+  }).join('');
+}
+
+function updateLeaderKPI(){
+  const sT=habits.reduce((a,h)=>a+h.weekS,0),spT=habits.reduce((a,h)=>a+h.weekSp,0);
+  const l=document.getElementById('kpi-leader'),ls=document.getElementById('kpi-leader-sub');
+  if(sT>spT){l.textContent='Sashankh';l.style.color='var(--blue-text)';ls.textContent=`+${sT-spT} ahead`;}
+  else if(spT>sT){l.textContent='Spoorthi';l.style.color='var(--pink-text)';ls.textContent=`+${spT-sT} ahead`;}
+  else{l.textContent='Tied!';l.style.color='var(--text)';ls.textContent='this week';}
+}
+
+function addGoal(){
+  const name=document.getElementById('new-goal-name').value.trim();if(!name)return;
+  const owner=document.getElementById('new-goal-owner').value;
+  goals.push({id:ng++,name,owner,status:'Not started',color:{shared:'#1D9E75',sashankh:'#378ADD',spoorthi:'#D4537E'}[owner],url:'#'});
+  document.getElementById('new-goal-name').value='';renderGoals();
+}
+
+function addTask(){
+  const label=document.getElementById('new-task-name').value.trim();if(!label)return;
+  tasks.push({id:nt++,label,assignee:document.getElementById('new-task-assignee').value,goal:'',date:'',overdue:false,done:false,url:'#'});
+  document.getElementById('new-task-name').value='';renderTasks();
+}
+
+function addHabit(){
+  const name=document.getElementById('new-habit-name').value.trim();if(!name)return;
+  habits.push({id:nh++,name,s:false,sp:false,weekS:0,weekSp:0});
+  document.getElementById('new-habit-name').value='';renderHabits();renderVs();
+}
+
+renderGoals();renderTasks();renderHabits();renderVs();updateLeaderKPI();
+</script>
+</body>
+</html>
