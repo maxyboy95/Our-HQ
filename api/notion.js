@@ -167,7 +167,20 @@ module.exports = async (req, res) => {
       return res.status(200).json({ stats });
     }
 
-    return res.status(400).json({ error: 'Unknown action' });
+    if (action === 'addTask') {
+      const { name, assignee, dueDate, goalId } = req.body;
+      const properties = {
+        Name: { title: [{ text: { content: name } }] },
+        'Assigned To': { select: { name: assignee } },
+        Done: { checkbox: false }
+      };
+      if (dueDate) properties['Due Date'] = { date: { start: dueDate } };
+      if (goalId) properties['Goals'] = { relation: [{ id: goalId }] };
+      const page = await createPage(TASKS_DB, properties);
+      return res.status(200).json({ id: page.id });
+    }
+
+        return res.status(400).json({ error: 'Unknown action' });
 
   } catch (err) {
     console.error(err);
