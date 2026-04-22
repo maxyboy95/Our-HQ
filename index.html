@@ -504,16 +504,20 @@ async function saveTask() {
   renderTasks();
 
   try {
-    await fetch('/api/notion?action=addTask', {
+    const res = await fetch('/api/notion?action=addTask', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, assignee, dueDate, goalId })
     });
+    const data = await res.json();
+    if (!res.ok || data.error) {
+      throw new Error(data.error || 'Unknown error');
+    }
     await loadData();
   } catch(err) {
     appData.tasks = appData.tasks.filter(t => t.id !== tempTask.id);
     renderTasks();
-    showError('Could not add task to Notion. Please try again.');
+    showError('Could not add task to Notion: ' + err.message);
   } finally {
     btn.disabled = false;
     btn.textContent = 'Save to Notion';
