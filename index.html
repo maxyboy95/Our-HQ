@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Our HQ — Sashankh & Spoorthi</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #ffffff; --bg2: #f5f5f3; --bg3: #efefec;
+    --text: #1a1a18; --text2: #6b6b67; --text3: #9b9b96;
+    --border: rgba(0,0,0,0.1); --border2: rgba(0,0,0,0.18);
+    --danger: #c0392b; --success: #1D9E75;
+    --rad: 8px; --radlg: 12px;
+    --blue: #378ADD; --blue-bg: #E6F1FB; --blue-text: #185FA5;
+    --pink: #D4537E; --pink-bg: #FBEAF0; --pink-text: #993556;
+    --teal-bg: #E1F5EE; --teal-text: #0F6E56;
+    --amber-bg: #FAEEDA; --amber-text: #854F0B;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1e1e1c; --bg2: #2a2a28; --bg3: #323230;
+      --text: #f0f0ec; --text2: #a0a09a; --text3: #6b6b66;
+      --border: rgba(255,255,255,0.1); --border2: rgba(255,255,255,0.18);
+      --blue-bg: #0c2a4a; --blue-text: #85B7EB;
+      --pink-bg: #3a1628; --pink-text: #ED93B1;
+      --teal-bg: #062a1e; --teal-text: #5DCAA5;
+      --amber-bg: #2e1e06; --amber-text: #FAC775;
+    }
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg3); color: var(--text); min-height: 100vh; padding: 1.5rem; }
+  .container { max-width: 900px; margin: 0 auto; }
+  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+  .header h1 { font-size: 22px; font-weight: 500; }
+  .header-date { font-size: 13px; color: var(--text3); margin-top: 2px; }
+  .avatars { display: flex; gap: 10px; align-items: center; }
+  .avatar-group { display: flex; align-items: center; gap: 6px; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500; }
+  .avatar-s { background: var(--blue-bg); color: var(--blue-text); }
+  .avatar-sp { background: var(--pink-bg); color: var(--pink-text); }
+  .avatar-name { font-size: 13px; color: var(--text2); }
+  .divider-v { width: 1px; height: 20px; background: var(--border); }
+  .stat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 1.5rem; }
+  .stat { background: var(--bg2); border-radius: var(--rad); padding: 0.875rem 1rem; }
+  .stat-label { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+  .stat-val { font-size: 22px; font-weight: 500; }
+  .stat-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .two-col { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin-bottom: 1.5rem; }
+  .card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radlg); padding: 1rem 1.25rem; }
+  .card-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .sec-label { font-size: 11px; font-weight: 500; color: var(--text3); letter-spacing: 0.06em; text-transform: uppercase; }
+  .goal-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 0.5px solid var(--border); }
+  .goal-row:last-child { border-bottom: none; }
+  .goal-name { flex: 1; font-size: 13px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .badge { font-size: 11px; padding: 2px 7px; border-radius: 20px; flex-shrink: 0; white-space: nowrap; }
+  .bs { background: var(--teal-bg); color: var(--teal-text); }
+  .by { background: var(--blue-bg); color: var(--blue-text); }
+  .bw { background: var(--pink-bg); color: var(--pink-text); }
+  .bns { background: var(--bg2); color: var(--text2); }
+  .bip { background: var(--amber-bg); color: var(--amber-text); }
+  .task-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 0.5px solid var(--border); }
+  .task-row:last-child { border-bottom: none; }
+  .chk { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--border2); flex-shrink: 0; cursor: pointer; transition: all 0.15s; background: transparent; position: relative; }
+  .chk.on { background: var(--success); border-color: var(--success); }
+  .chk.on::after { content: ''; position: absolute; left: 3px; top: 1px; width: 6px; height: 9px; border: 1.5px solid white; border-top: none; border-left: none; transform: rotate(45deg); }
+  .tlbl { flex: 1; font-size: 13px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tlbl.done { text-decoration: line-through; color: var(--text3); }
+  .tdate { font-size: 11px; color: var(--text3); flex-shrink: 0; }
+  .tdate.overdue { color: var(--danger); font-weight: 500; }
+  .habit-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radlg); padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
+  .habit-grid { display: grid; grid-template-columns: 1fr 90px 90px; }
+  .hdr-cell { font-size: 11px; color: var(--text2); text-align: center; padding-bottom: 8px; border-bottom: 0.5px solid var(--border); }
+  .hname { font-size: 13px; padding: 9px 0; border-bottom: 0.5px solid var(--border); }
+  .hname:last-child { border-bottom: none; }
+  .hchk { display: flex; align-items: center; justify-content: center; padding: 7px 0; border-bottom: 0.5px solid var(--border); }
+  .hchk:last-child { border-bottom: none; }
+  .vs-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radlg); padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
+  .score-row { display: flex; align-items: center; margin-bottom: 14px; }
+  .player { flex: 1; }
+  .p-name { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+  .p-score { font-size: 36px; font-weight: 500; line-height: 1; }
+  .p-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .vs-mid { padding: 0 16px; font-size: 13px; color: var(--text3); }
+  .leader-banner { background: var(--bg2); border-radius: var(--rad); padding: 8px 14px; text-align: center; font-size: 13px; margin-bottom: 16px; }
+  .legend { display: flex; gap: 14px; margin-bottom: 14px; }
+  .ldot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+  .hbar-row { margin-bottom: 10px; }
+  .hbar-row:last-child { margin-bottom: 0; }
+  .hbar-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--text2); margin-bottom: 4px; gap: 8px; }
+  .hbar-track { height: 8px; background: var(--bg2); border-radius: 4px; overflow: hidden; display: flex; }
+  .hbar-s { height: 100%; background: var(--blue); transition: width 0.4s; }
+  .hbar-sp { height: 100%; background: var(--pink); transition: width 0.4s; }
+  .loading { text-align: center; padding: 2rem; font-size: 13px; color: var(--text3); }
+  .error-msg { background: #FCEBEB; color: #A32D2D; border-radius: var(--rad); padding: 10px 14px; font-size: 13px; margin-bottom: 1rem; }
+  .refresh-btn { font-size: 12px; padding: 5px 12px; border-radius: var(--rad); border: 0.5px solid var(--border2); background: transparent; color: var(--text2); cursor: pointer; font-family: inherit; }
+  .refresh-btn:hover { background: var(--bg2); }
+  .spinning { animation: spin 1s linear infinite; display: inline-block; }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  @media (max-width: 600px) {
+    .stat-grid { grid-template-columns: repeat(2,1fr); }
+    .two-col { grid-template-columns: 1fr; }
+    body { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div>
+      <h1>Our HQ</h1>
+      <div class="header-date" id="today-date"></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="refresh-btn" onclick="loadData()" id="refresh-btn">Refresh</button>
+      <div class="avatars">
+        <div class="avatar-group"><div class="avatar avatar-s">S</div><span class="avatar-name">Sashankh</span></div>
+        <div class="divider-v"></div>
+        <div class="avatar-group"><div class="avatar avatar-sp">Sp</div><span class="avatar-name">Spoorthi</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="error-container"></div>
+
+  <div class="stat-grid">
+    <div class="stat"><div class="stat-label">Active goals</div><div class="stat-val" id="kpi-goals">—</div><div class="stat-sub">in progress</div></div>
+    <div class="stat"><div class="stat-label">Overdue tasks</div><div class="stat-val" id="kpi-overdue">—</div><div class="stat-sub">needs attention</div></div>
+    <div class="stat"><div class="stat-label">Both done today</div><div class="stat-val" id="kpi-both">—</div><div class="stat-sub">habits completed</div></div>
+    <div class="stat"><div class="stat-label">Current leader</div><div class="stat-val" id="kpi-leader" style="font-size:16px;padding-top:3px;">—</div><div class="stat-sub" id="kpi-leader-sub">this week</div></div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-hdr"><span class="sec-label">Goals</span></div>
+      <div id="goals-list"><div class="loading">Loading...</div></div>
+    </div>
+    <div class="card">
+      <div class="card-hdr"><span class="sec-label">Tasks</span></div>
+      <div id="tasks-list"><div class="loading">Loading...</div></div>
+    </div>
+  </div>
+
+  <div class="habit-card">
+    <div class="card-hdr">
+      <span class="sec-label">Today's habits</span>
+      <span style="font-size:12px;color:var(--text3);" id="habits-summary"></span>
+    </div>
+    <div class="habit-grid">
+      <div></div>
+      <div class="hdr-cell" style="color:var(--blue-text);">Sashankh</div>
+      <div class="hdr-cell" style="color:var(--pink-text);">Spoorthi</div>
+      <div id="h-names"><div class="loading" style="grid-column:span 3;">Loading...</div></div>
+      <div id="h-s"></div>
+      <div id="h-sp"></div>
+    </div>
+  </div>
+
+  <div class="vs-card">
+    <div class="card-hdr"><span class="sec-label">Head-to-head</span><span style="font-size:12px;color:var(--text3);">This week</span></div>
+    <div class="score-row">
+      <div class="player">
+        <div class="p-name" style="color:var(--blue-text);">Sashankh</div>
+        <div class="p-score" style="color:var(--blue-text);" id="vs-s">—</div>
+        <div class="p-sub">habits done</div>
+      </div>
+      <div class="vs-mid">vs</div>
+      <div class="player" style="text-align:right;">
+        <div class="p-name" style="color:var(--pink-text);">Spoorthi</div>
+        <div class="p-score" style="color:var(--pink-text);" id="vs-sp">—</div>
+        <div class="p-sub">habits done</div>
+      </div>
+    </div>
+    <div class="leader-banner" id="leader-banner">Loading...</div>
+    <div class="legend">
+      <span style="display:flex;align-items:center;"><span class="ldot" style="background:var(--blue);"></span><span style="font-size:12px;color:var(--text2);">Sashankh</span></span>
+      <span style="display:flex;align-items:center;"><span class="ldot" style="background:var(--pink);"></span><span style="font-size:12px;color:var(--text2);">Spoorthi</span></span>
+    </div>
+    <div id="vs-bars"><div class="loading">Loading...</div></div>
+  </div>
+
+</div>
+
+<script>
+document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+
+let appData = { goals:[], tasks:[], habits:[], todayLogs:[], weeklyStats:{} };
+
+const ownerBadge = o => {
+  const map = { shared:'<span class="badge bs">Shared</span>', sashankh:'<span class="badge by">Sashankh</span>', spoorthi:'<span class="badge bw">Spoorthi</span>' };
+  return map[o?.toLowerCase()] || `<span class="badge bns">${o||'—'}</span>`;
+};
+
+const statusBadge = s => {
+  if(s==='In progress') return '<span class="badge bip">In progress</span>';
+  if(s==='Done') return '<span class="badge bs">Done</span>';
+  return '<span class="badge bns">Not started</span>';
+};
+
+function showError(msg) {
+  document.getElementById('error-container').innerHTML = `<div class="error-msg">${msg}</div>`;
+}
+
+function clearError() {
+  document.getElementById('error-container').innerHTML = '';
+}
+
+async function loadData() {
+  clearError();
+  const btn = document.getElementById('refresh-btn');
+  btn.innerHTML = '<span class="spinning">↻</span>';
+  btn.disabled = true;
+
+  try {
+    const [dataRes, statsRes] = await Promise.all([
+      fetch('/api/notion?action=getData'),
+      fetch('/api/notion?action=getWeeklyStats')
+    ]);
+
+    if (!dataRes.ok) throw new Error('Failed to load data from Notion');
+    if (!statsRes.ok) throw new Error('Failed to load weekly stats');
+
+    const data = await dataRes.json();
+    const stats = await statsRes.json();
+
+    appData = { ...data, weeklyStats: stats.stats || {} };
+    renderAll();
+  } catch(err) {
+    showError(`Could not connect to Notion: ${err.message}. Check your API key and database connections.`);
+  } finally {
+    btn.innerHTML = 'Refresh';
+    btn.disabled = false;
+  }
+}
+
+function renderGoals() {
+  const { goals } = appData;
+  const activeGoals = goals.filter(g => g.status !== 'Done');
+  document.getElementById('goals-list').innerHTML = goals.length === 0
+    ? '<div class="loading">No goals found</div>'
+    : goals.map(g => `
+      <div class="goal-row">
+        ${ownerBadge(g.owner)}
+        <span class="goal-name" title="${g.name}">${g.name}</span>
+        ${statusBadge(g.status)}
+      </div>`).join('');
+  document.getElementById('kpi-goals').textContent = activeGoals.length;
+}
+
+function renderTasks() {
+  const { tasks } = appData;
+  const today = new Date().toISOString().split('T')[0];
+  const sorted = [...tasks].sort((a,b) => {
+    if(a.done !== b.done) return a.done ? 1 : -1;
+    return (a.dueDate||'') < (b.dueDate||'') ? -1 : 1;
+  });
+
+  document.getElementById('tasks-list').innerHTML = sorted.length === 0
+    ? '<div class="loading">No tasks found</div>'
+    : sorted.map(t => {
+        const isOverdue = t.dueDate && t.dueDate < today && !t.done;
+        const dateLabel = isOverdue ? 'Overdue' : (t.dueDate ? new Date(t.dueDate+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '');
+        return `<div class="task-row">
+          <div class="chk${t.done?' on':''}" onclick="toggleTask('${t.id}',${!t.done})"></div>
+          <span class="tlbl${t.done?' done':''}" title="${t.name}">${t.name}</span>
+          ${ownerBadge(t.assignedTo)}
+          <span class="tdate${isOverdue?' overdue':''}">${dateLabel}</span>
+        </div>`;
+      }).join('');
+
+  const overdue = tasks.filter(t => t.dueDate && t.dueDate < today && !t.done).length;
+  const el = document.getElementById('kpi-overdue');
+  el.textContent = overdue;
+  el.style.color = overdue > 0 ? 'var(--danger)' : 'var(--text)';
+}
+
+function renderHabits() {
+  const { habits, todayLogs } = appData;
+  const logMap = {};
+  todayLogs.forEach(l => { logMap[l.habitId] = l; });
+
+  document.getElementById('h-names').innerHTML = habits.map(h => `<div class="hname">${h.name}</div>`).join('');
+  document.getElementById('h-s').innerHTML = habits.map(h => {
+    const log = logMap[h.id];
+    const checked = log?.sashankh || false;
+    return `<div class="hchk"><div class="chk${checked?' on':''}" onclick="toggleHabit('${h.id}','sashankh',${!checked},'${log?.id||''}')"></div></div>`;
+  }).join('');
+  document.getElementById('h-sp').innerHTML = habits.map(h => {
+    const log = logMap[h.id];
+    const checked = log?.spoorthi || false;
+    return `<div class="hchk"><div class="chk${checked?' on':''}" onclick="toggleHabit('${h.id}','spoorthi',${!checked},'${log?.id||''}')"></div></div>`;
+  }).join('');
+
+  const both = habits.filter(h => {
+    const log = logMap[h.id];
+    return log?.sashankh && log?.spoorthi;
+  }).length;
+  document.getElementById('habits-summary').textContent = `${both} of ${habits.length} both done`;
+  document.getElementById('kpi-both').textContent = `${both}/${habits.length}`;
+}
+
+function renderVs() {
+  const { habits, weeklyStats } = appData;
+  let sTotal = 0, spTotal = 0;
+
+  habits.forEach(h => {
+    const s = weeklyStats[h.id] || { sashankh: 0, spoorthi: 0 };
+    sTotal += s.sashankh;
+    spTotal += s.spoorthi;
+  });
+
+  document.getElementById('vs-s').textContent = sTotal;
+  document.getElementById('vs-sp').textContent = spTotal;
+
+  const banner = document.getElementById('leader-banner');
+  if(sTotal > spTotal){ banner.textContent=`Sashankh leads by ${sTotal-spTotal} — keep it up!`; banner.style.color='var(--blue-text)'; }
+  else if(spTotal > sTotal){ banner.textContent=`Spoorthi leads by ${spTotal-sTotal} — time to catch up, Sashankh!`; banner.style.color='var(--pink-text)'; }
+  else { banner.textContent='Tied — check off your habits to take the lead!'; banner.style.color='var(--text)'; }
+
+  const ldr = document.getElementById('kpi-leader');
+  const lsub = document.getElementById('kpi-leader-sub');
+  if(sTotal > spTotal){ ldr.textContent='Sashankh'; ldr.style.color='var(--blue-text)'; lsub.textContent=`+${sTotal-spTotal} ahead`; }
+  else if(spTotal > sTotal){ ldr.textContent='Spoorthi'; ldr.style.color='var(--pink-text)'; lsub.textContent=`+${spTotal-sTotal} ahead`; }
+  else { ldr.textContent='Tied!'; ldr.style.color='var(--text)'; lsub.textContent='this week'; }
+
+  document.getElementById('vs-bars').innerHTML = habits.map(h => {
+    const s = weeklyStats[h.id] || { sashankh: 0, spoorthi: 0 };
+    const tot = s.sashankh + s.spoorthi;
+    const sw = tot > 0 ? Math.round((s.sashankh/tot)*100) : 50;
+    return `<div class="hbar-row">
+      <div class="hbar-labels">
+        <span>${h.name}</span>
+        <div style="display:flex;gap:6px;">
+          <span style="color:var(--blue-text);font-weight:500;">${s.sashankh}</span>
+          <span style="color:var(--text3);">|</span>
+          <span style="color:var(--pink-text);font-weight:500;">${s.spoorthi}</span>
+        </div>
+      </div>
+      <div class="hbar-track">
+        <div class="hbar-s" style="width:${sw}%;"></div>
+        <div class="hbar-sp" style="width:${100-sw}%;"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderAll() {
+  renderGoals();
+  renderTasks();
+  renderHabits();
+  renderVs();
+}
+
+async function toggleTask(pageId, done) {
+  const task = appData.tasks.find(t => t.id === pageId);
+  if(task) task.done = done;
+  renderTasks();
+  try {
+    await fetch('/api/notion?action=toggleTask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pageId, done })
+    });
+  } catch(err) {
+    if(task) task.done = !done;
+    renderTasks();
+    showError('Could not update task in Notion. Please try again.');
+  }
+}
+
+async function toggleHabit(habitId, person, value, logId) {
+  const log = appData.todayLogs.find(l => l.habitId === habitId);
+  if(log) { log[person] = value; }
+  else {
+    appData.todayLogs.push({ id: '', habitId, sashankh: person==='sashankh'?value:false, spoorthi: person==='spoorthi'?value:false });
+  }
+  renderHabits();
+
+  try {
+    const res = await fetch('/api/notion?action=toggleHabit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ logId: logId||'', habitId, person, value })
+    });
+    const data = await res.json();
+    if(data.id && !logId) {
+      const l = appData.todayLogs.find(x => x.habitId === habitId);
+      if(l) l.id = data.id;
+    }
+    await loadData();
+  } catch(err) {
+    showError('Could not update habit in Notion. Please try again.');
+    await loadData();
+  }
+}
+
+loadData();
+</script>
+</body>
+</html>
