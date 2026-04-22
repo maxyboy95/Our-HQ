@@ -80,6 +80,11 @@ module.exports = async (req, res) => {
         })
       ]);
 
+      if (!goalsRes.results) return res.status(500).json({ error: `Goals DB failed: ${JSON.stringify(goalsRes)}` });
+      if (!tasksRes.results) return res.status(500).json({ error: `Tasks DB failed: ${JSON.stringify(tasksRes)}` });
+      if (!habitsRes.results) return res.status(500).json({ error: `Habits DB failed: ${JSON.stringify(habitsRes)}` });
+      if (!logsRes.results) return res.status(500).json({ error: `Habit Log DB failed: ${JSON.stringify(logsRes)}` });
+
       const goals = goalsRes.results.map(p => ({
         id: p.id,
         name: getTitle(p),
