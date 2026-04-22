@@ -2,20 +2,32 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Our HQ — Sashankh & Spoorthi</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>HQ — Our Tracker</title>
+<meta name="description" content="Sashankh & Spoorthi's shared goals, tasks and habits tracker">
+<meta name="theme-color" content="#1D9E75">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="HQ">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #ffffff; --bg2: #f5f5f3; --bg3: #efefec;
-    --text: #1a1a18; --text2: #6b6b67; --text3: #9b9b96;
-    --border: rgba(0,0,0,0.1); --border2: rgba(0,0,0,0.18);
+    --bg: #ffffff; --bg2: #e8f4fd; --bg3: #F0F8FF;
+    --text: #0d2137; --text2: #4a6fa5; --text3: #7fa8cc;
+    --border: rgba(55,138,221,0.15); --border2: rgba(55,138,221,0.25);
     --danger: #c0392b; --success: #1D9E75;
     --rad: 8px; --radlg: 12px;
     --blue: #378ADD; --blue-bg: #E6F1FB; --blue-text: #185FA5;
     --pink: #D4537E; --pink-bg: #FBEAF0; --pink-text: #993556;
     --teal-bg: #E1F5EE; --teal-text: #0F6E56;
     --amber-bg: #FAEEDA; --amber-text: #854F0B;
+    --header-gradient: linear-gradient(135deg, #1D9E75, #378ADD);
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -28,10 +40,10 @@
       --amber-bg: #2e1e06; --amber-text: #FAC775;
     }
   }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg3); color: var(--text); min-height: 100vh; padding: 1.5rem; }
+  body { font-family: 'Outfit', sans-serif; background: var(--bg3); color: var(--text); min-height: 100vh; padding: 1.5rem; }
   .container { max-width: 900px; margin: 0 auto; }
   .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-  .header h1 { font-size: 22px; font-weight: 500; }
+  .header h1 { font-size: 22px; font-weight: 600; }
   .header-date { font-size: 13px; color: var(--text3); margin-top: 2px; }
   .avatars { display: flex; gap: 10px; align-items: center; }
   .avatar-group { display: flex; align-items: center; gap: 6px; }
@@ -41,14 +53,14 @@
   .avatar-name { font-size: 13px; color: var(--text2); }
   .divider-v { width: 1px; height: 20px; background: var(--border); }
   .stat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 1.5rem; }
-  .stat { background: var(--bg2); border-radius: var(--rad); padding: 0.875rem 1rem; }
+  .stat { background: white; border: 0.5px solid var(--border); border-radius: var(--rad); padding: 0.875rem 1rem; box-shadow: 0 1px 3px rgba(55,138,221,0.08); }
   .stat-label { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
   .stat-val { font-size: 22px; font-weight: 500; }
   .stat-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
   .two-col { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin-bottom: 1.5rem; }
   .card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radlg); padding: 1rem 1.25rem; }
   .card-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-  .sec-label { font-size: 11px; font-weight: 500; color: var(--text3); letter-spacing: 0.06em; text-transform: uppercase; }
+  .sec-label { font-size: 11px; font-weight: 600; color: var(--text3); letter-spacing: 0.06em; text-transform: uppercase; }
   .goal-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 0.5px solid var(--border); }
   .goal-row:last-child { border-bottom: none; }
   .goal-name { flex: 1; font-size: 13px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -92,7 +104,7 @@
   .hbar-sp { height: 100%; background: var(--pink); transition: width 0.4s; }
   .loading { text-align: center; padding: 2rem; font-size: 13px; color: var(--text3); }
   .error-msg { background: #FCEBEB; color: #A32D2D; border-radius: var(--rad); padding: 10px 14px; font-size: 13px; margin-bottom: 1rem; }
-  .refresh-btn { font-size: 12px; padding: 5px 12px; border-radius: var(--rad); border: 0.5px solid var(--border2); background: transparent; color: var(--text2); cursor: pointer; font-family: inherit; }
+  .refresh-btn { font-size: 12px; padding: 5px 12px; border-radius: var(--rad); border: 0.5px solid var(--border2); background: transparent; color: var(--text2); cursor: pointer; font-family: 'Outfit', sans-serif; }
   .refresh-btn:hover { background: var(--bg2); }
   .spinning { animation: spin 1s linear infinite; display: inline-block; }
   @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -111,12 +123,12 @@
   .modal-title { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 1rem; }
   .modal-field { margin-bottom: 12px; }
   .modal-field label { font-size: 12px; color: var(--text2); display: block; margin-bottom: 4px; }
-  .modal-field input, .modal-field select { width: 100%; font-size: 13px; padding: 7px 10px; border: 0.5px solid var(--border2); border-radius: var(--rad); background: var(--bg2); color: var(--text); font-family: inherit; outline: none; }
+  .modal-field input, .modal-field select { width: 100%; font-size: 13px; padding: 7px 10px; border: 0.5px solid var(--border2); border-radius: var(--rad); background: var(--bg2); color: var(--text); font-family: 'Outfit', sans-serif; outline: none; }
   .modal-field input:focus, .modal-field select:focus { border-color: var(--text3); }
   .modal-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
-  .btn-cancel { font-size: 13px; padding: 7px 14px; border-radius: var(--rad); border: 0.5px solid var(--border2); background: transparent; color: var(--text2); cursor: pointer; font-family: inherit; }
-  .btn-save { font-size: 13px; padding: 7px 16px; border-radius: var(--rad); border: none; background: var(--text); color: var(--bg); cursor: pointer; font-family: inherit; }
+  .btn-cancel { font-size: 13px; padding: 7px 14px; border-radius: var(--rad); border: 0.5px solid var(--border2); background: transparent; color: var(--text2); cursor: pointer; font-family: 'Outfit', sans-serif; }
+  .btn-save { font-size: 13px; padding: 7px 16px; border-radius: var(--rad); border: none; background: var(--text); color: var(--bg); cursor: pointer; font-family: 'Outfit', sans-serif; }
   .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
   .saving-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 0.5px solid var(--border); opacity: 0.5; }
   .pulse-chk { width: 16px; height: 16px; border-radius: 4px; background: var(--teal-bg); border: 1.5px solid var(--success); flex-shrink: 0; animation: pulse 1s infinite; }
@@ -131,17 +143,25 @@
 <body>
 <div class="container">
 
-  <div class="header">
-    <div>
-      <h1>Our HQ</h1>
-      <div class="header-date" id="today-date"></div>
-    </div>
-    <div style="display:flex;align-items:center;gap:12px;">
-      <button class="refresh-btn" onclick="loadData()" id="refresh-btn">Refresh</button>
-      <div class="avatars">
-        <div class="avatar-group"><div class="avatar avatar-s">S</div><span class="avatar-name">Sashankh</span></div>
-        <div class="divider-v"></div>
-        <div class="avatar-group"><div class="avatar avatar-sp">Sp</div><span class="avatar-name">Spoorthi</span></div>
+  <div style="background:linear-gradient(135deg,#1D9E75,#378ADD);border-radius:var(--radlg);padding:1.25rem;margin-bottom:1.5rem;color:white;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <h1 style="font-size:24px;font-weight:600;color:white;">Our HQ</h1>
+        <div style="font-size:12px;opacity:0.8;margin-top:2px;" id="today-date"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button onclick="loadData()" id="refresh-btn" style="font-size:12px;padding:5px 12px;border-radius:20px;border:1.5px solid rgba(255,255,255,0.5);background:transparent;color:white;cursor:pointer;font-family:'Outfit',sans-serif;">Refresh</button>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <div style="display:flex;align-items:center;gap:5px;">
+            <div style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:white;">S</div>
+            <span style="font-size:12px;color:rgba(255,255,255,0.9);">Sashankh</span>
+          </div>
+          <div style="width:1px;height:16px;background:rgba(255,255,255,0.3);"></div>
+          <div style="display:flex;align-items:center;gap:5px;">
+            <div style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.25);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:white;">Sp</div>
+            <span style="font-size:12px;color:rgba(255,255,255,0.9);">Spoorthi</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -525,6 +545,12 @@ async function saveTask() {
 }
 
 loadData();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW error:', err));
+  });
+}
 </script>
 </body>
 </html>
