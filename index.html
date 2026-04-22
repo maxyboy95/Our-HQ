@@ -96,6 +96,31 @@
   .refresh-btn:hover { background: var(--bg2); }
   .spinning { animation: spin 1s linear infinite; display: inline-block; }
   @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .fab { position: fixed; bottom: 1.5rem; right: 1.5rem; width: 46px; height: 46px; border-radius: 50%; background: var(--text); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 100; transition: transform 0.15s; }
+  .fab:hover { transform: scale(1.08); }
+  .fab-icon { width: 18px; height: 18px; position: relative; }
+  .fab-icon::before, .fab-icon::after { content: ''; position: absolute; background: var(--bg); border-radius: 2px; }
+  .fab-icon::before { width: 18px; height: 2px; top: 8px; left: 0; }
+  .fab-icon::after { width: 2px; height: 18px; top: 0; left: 8px; }
+  .fab-tooltip { position: fixed; bottom: 2.1rem; right: 4.5rem; background: var(--text); color: var(--bg); font-size: 12px; padding: 4px 10px; border-radius: 20px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.15s; z-index: 100; }
+  .fab:hover ~ .fab-tooltip { opacity: 1; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s; padding: 1rem; }
+  .modal-overlay.show { opacity: 1; pointer-events: all; }
+  .modal { background: var(--bg); border-radius: var(--radlg); padding: 1.25rem; width: 100%; max-width: 380px; transform: translateY(16px); transition: transform 0.2s; }
+  .modal-overlay.show .modal { transform: translateY(0); }
+  .modal-title { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 1rem; }
+  .modal-field { margin-bottom: 12px; }
+  .modal-field label { font-size: 12px; color: var(--text2); display: block; margin-bottom: 4px; }
+  .modal-field input, .modal-field select { width: 100%; font-size: 13px; padding: 7px 10px; border: 0.5px solid var(--border2); border-radius: var(--rad); background: var(--bg2); color: var(--text); font-family: inherit; outline: none; }
+  .modal-field input:focus, .modal-field select:focus { border-color: var(--text3); }
+  .modal-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
+  .btn-cancel { font-size: 13px; padding: 7px 14px; border-radius: var(--rad); border: 0.5px solid var(--border2); background: transparent; color: var(--text2); cursor: pointer; font-family: inherit; }
+  .btn-save { font-size: 13px; padding: 7px 16px; border-radius: var(--rad); border: none; background: var(--text); color: var(--bg); cursor: pointer; font-family: inherit; }
+  .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+  .saving-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 0.5px solid var(--border); opacity: 0.5; }
+  .pulse-chk { width: 16px; height: 16px; border-radius: 4px; background: var(--teal-bg); border: 1.5px solid var(--success); flex-shrink: 0; animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
   @media (max-width: 600px) {
     .stat-grid { grid-template-columns: repeat(2,1fr); }
     .two-col { grid-template-columns: 1fr; }
@@ -181,6 +206,44 @@
 
 </div>
 
+<button class="fab" onclick="openModal()" aria-label="Add task"><div class="fab-icon"></div></button>
+<div class="fab-tooltip">Add task</div>
+
+<div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <div class="modal-title">New task</div>
+    <div class="modal-field">
+      <label>Task name</label>
+      <input type="text" id="modal-name" placeholder="e.g. Buy groceries">
+    </div>
+    <div class="modal-two-col">
+      <div class="modal-field">
+        <label>Assigned to</label>
+        <select id="modal-assignee">
+          <option value="Sashankh">Sashankh</option>
+          <option value="Spoorthi">Spoorthi</option>
+          <option value="Shared">Shared</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>Due date</label>
+        <input type="date" id="modal-date">
+      </div>
+    </div>
+    <div class="modal-field">
+      <label>Goal (optional)</label>
+      <select id="modal-goal">
+        <option value="">No goal</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" id="modal-save-btn" onclick="saveTask()">Save to Notion</button>
+    </div>
+  </div>
+</div>
+
+
 <script>
 document.getElementById('today-date').textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
 
@@ -260,6 +323,7 @@ function renderTasks() {
     : sorted.map(t => {
         const isOverdue = t.dueDate && t.dueDate < today && !t.done;
         const dateLabel = isOverdue ? 'Overdue' : (t.dueDate ? new Date(t.dueDate+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '');
+        if(t.saving) return `<div class="saving-row"><div class="pulse-chk"></div><span class="tlbl" style="color:var(--text3);">${t.name} — saving...</span></div>`;
         return `<div class="task-row">
           <div class="chk${t.done?' on':''}" onclick="toggleTask('${t.id}',${!t.done})"></div>
           <span class="tlbl${t.done?' done':''}" title="${t.name}">${t.name}</span>
@@ -391,6 +455,68 @@ async function toggleHabit(habitId, person, value, logId) {
   } catch(err) {
     showError('Could not update habit in Notion. Please try again.');
     await loadData();
+  }
+}
+
+
+function openModal() {
+  const modal = document.getElementById('modal-overlay');
+  modal.classList.add('show');
+  const goalSelect = document.getElementById('modal-goal');
+  goalSelect.innerHTML = '<option value="">No goal</option>' +
+    appData.goals.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+  document.getElementById('modal-name').value = '';
+  document.getElementById('modal-date').value = '';
+  document.getElementById('modal-name').focus();
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('show');
+}
+
+function handleOverlayClick(e) {
+  if(e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
+
+async function saveTask() {
+  const name = document.getElementById('modal-name').value.trim();
+  if(!name) { document.getElementById('modal-name').focus(); return; }
+
+  const assignee = document.getElementById('modal-assignee').value;
+  const dueDate = document.getElementById('modal-date').value;
+  const goalId = document.getElementById('modal-goal').value;
+
+  const btn = document.getElementById('modal-save-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  const tempTask = {
+    id: 'temp-' + Date.now(),
+    name, assignedTo: assignee,
+    dueDate, done: false,
+    goalIds: goalId ? [goalId] : [],
+    saving: true
+  };
+  appData.tasks.push(tempTask);
+  closeModal();
+  renderTasks();
+
+  try {
+    await fetch('/api/notion?action=addTask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, assignee, dueDate, goalId })
+    });
+    await loadData();
+  } catch(err) {
+    appData.tasks = appData.tasks.filter(t => t.id !== tempTask.id);
+    renderTasks();
+    showError('Could not add task to Notion. Please try again.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save to Notion';
   }
 }
 
