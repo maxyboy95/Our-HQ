@@ -60,6 +60,10 @@ function getRelationIds(page, prop) {
 }
 
 module.exports = async (req, res) => {
+  if (typeof req.body === 'string') {
+    try { req.body = JSON.parse(req.body); } catch(e) { req.body = {}; }
+  }
+  if (!req.body) req.body = {};
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
