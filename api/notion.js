@@ -175,9 +175,11 @@ module.exports = async (req, res) => {
 
     if (action === 'addTask') {
       const { name, assignee, dueDate, goalId } = req.body;
+      const assigneeMap = { 'sashankh': 'Sashankh', 'spoorthi': 'Spoorthi', 'shared': 'Shared', 'sir': 'Sashankh', 'me': 'Sashankh' };
+      const normAssignee = assigneeMap[(assignee || '').toLowerCase()] || assignee || 'Sashankh';
       const properties = {
-        Name: { title: [{ text: { content: name } }] },
-        'Assigned to': { select: { name: assignee } },
+        Name: { title: [{ text: { content: name || 'Untitled task' } }] },
+        'Assigned to': { select: { name: normAssignee } },
         Done: { checkbox: false }
       };
       if (dueDate) properties['Due Date'] = { date: { start: dueDate } };
@@ -191,7 +193,8 @@ module.exports = async (req, res) => {
       if (!res2.ok) {
         console.error('Notion addTask error:', JSON.stringify(page));
         console.error('Properties sent:', JSON.stringify(properties));
-        return res.status(400).json({ error: 'Notion error: ' + JSON.stringify(page), propertiesSent: properties });
+        console.error('Raw body:', JSON.stringify(req.body));
+        return res.status(200).json({ id: 'error', error: 'Notion error: ' + JSON.stringify(page), propertiesSent: properties });
       }
       return res.status(200).json({ id: page.id });
     }
