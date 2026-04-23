@@ -274,7 +274,7 @@ module.exports = async (req, res) => {
         if (action === 'jarvis') {
       const { message, history, context } = req.body;
 
-      const systemPrompt = 'You are J.A.R.V.I.S., the AI assistant from Iron Man. Speak with sophisticated British wit, precision and dry intelligence. Address Sashankh as "sir". You have full knowledge of his goals, tasks and habits. Keep responses under 100 words unless asked for detail. CRITICAL RULE: When the user asks you to add a task, you MUST end your response with an ACTION line on its own line in this EXACT format with no spaces or line breaks inside the JSON: ACTION:{"action":"addTask","actionData":{"name":"TASK NAME","assignee":"Sashankh","dueDate":"YYYY-MM-DD"}} - use the date the user mentions or leave dueDate as empty string if not mentioned. For other actions use ACTION:{"action":"reload"} to refresh data. Always include the ACTION line when performing an action - this is mandatory.';
+      const systemPrompt = 'You are J.A.R.V.I.S., the AI assistant from Iron Man. Speak with sophisticated British wit, precision and dry intelligence. Address Sashankh as "sir". You have full knowledge of his goals, tasks and habits. Keep responses under 100 words unless asked for detail. CRITICAL RULE: When performing any action you MUST end your response with an ACTION line in this EXACT format with no spaces or line breaks inside the JSON. To add a task: ACTION:{"action":"addTask","actionData":{"name":"TASK NAME","assignee":"Sashankh","dueDate":"YYYY-MM-DD"}} - use the date the user mentions or leave dueDate as empty string if not mentioned. To add a habit: ACTION:{"action":"addHabit","actionData":{"name":"HABIT NAME","assignedTo":"Shared"}} - use Sashankh, Spoorthi or Shared based on who the user mentions. To refresh data: ACTION:{"action":"reload"}. Always include the ACTION line when performing an action - this is mandatory.';
 
       const contextSummary = 'Current date: ' + context.dayName + ', ' + context.dateStr + '. ' +
         'Active goals: ' + context.goals.map(g => g.name + ' (' + g.owner + ')').join(', ') + '. ' +
@@ -323,6 +323,25 @@ module.exports = async (req, res) => {
       }
 
       return res.status(200).json({ reply, action: actionObj ? actionObj.action : null, actionData: actionObj ? actionObj.actionData : null });
+    }
+
+        if (action === 'addHabit') {
+      const { name, assignedTo } = req.body;
+      const assigneeMap = { 'sashankh': 'Sashankh', 'spoorthi': 'Spoorthi', 'shared': 'Shared', 'both': 'Shared', 'sir': 'Sashankh', 'me': 'Sashankh' };
+      const normAssignee = assigneeMap[(assignedTo || '').toLowerCase()] || assignedTo || 'Shared';
+      const properties = {
+        Name: { title: [{ text: { content: name || 'New habit' } }] },
+        'Assigned To': { select: { name: normAssignee } },
+        Frequency: { select: { name: 'Daily' } }
+      };
+      const res2 = await fetch('https://api.notion.com/v1/pages', {
+        method: 'POST',
+        headers: notionHeaders,
+        body: JSON.stringify({ parent: { database_id: HABITS_DB }, properties })
+      });
+      const page = await res2.json();
+      if (!res2.ok) return res.status(200).json({ id: 'error', error: 'Notion error: ' + JSON.stringify(page) });
+      return res.status(200).json({ id: page.id });
     }
 
         return res.status(400).json({ error: 'Unknown action' });
