@@ -192,7 +192,7 @@ module.exports = async (req, res) => {
       return res.status(200).json({ id: page.id });
     }
 
-        if (action === 'getBriefing') {
+    if (action === 'getBriefing') {
       const today = new Date().toISOString().split('T')[0];
       const dayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
       const dateStr = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -203,34 +203,39 @@ module.exports = async (req, res) => {
         fetch('https://newsapi.org/v2/top-headlines?country=in&pageSize=5&apiKey=' + NEWS_API_KEY)
       ]);
 
-      const tasks = tasksRes.results.map(p => ({
+      const allTasks = tasksRes.results.map(p => ({
         name: getTitle(p),
         assignedTo: getSelect(p, 'Assigned to'),
         dueDate: getDate(p, 'Due Date'),
         done: getCheckbox(p, 'Done')
-      })).filter(t => !t.done);
+      }));
 
-      const todayTasks = tasks.filter(t => t.dueDate === today);
-      const overdueTasks = tasks.filter(t => t.dueDate && t.dueDate < today);
+      const pendingTasks = allTasks.filter(t => !t.done);
+      const todayTasks = pendingTasks.filter(t => t.dueDate === today);
+      const overdueTasks = pendingTasks.filter(t => t.dueDate && t.dueDate < today);
       const habits = habitsRes.results.map(p => getTitle(p));
 
       const newsData = await newsRes.json();
       const headlines = (newsData.articles || []).slice(0, 5).map(a => a.title).filter(Boolean);
 
-      const sashankhTasks = todayTasks.filter(t => t.assignedTo && t.assignedTo.toLowerCase() === 'sashankh' || t.assignedTo && t.assignedTo.toLowerCase() === 'shared');
-      const spoorthiTasks = todayTasks.filter(t => t.assignedTo && t.assignedTo.toLowerCase() === 'spoorthi' || t.assignedTo && t.assignedTo.toLowerCase() === 'shared');
+      const sashankhTasks = pendingTasks.filter(t => {
+        const a = (t.assignedTo || '').toLowerCase();
+        return a === 'sashankh' || a === 'shared';
+      });
+      const spoorthiTasks = pendingTasks.filter(t => {
+        const a = (t.assignedTo || '').toLowerCase();
+        return a === 'spoorthi' || a === 'shared';
+      });
 
-      const promptParts = [
-        'You are a friendly personal assistant called Jarvis. Generate a warm, natural morning briefing for Sashankh. Keep it conversational, upbeat and under 120 words. Speak directly to Sashankh.',
-        'Today is ' + dayName + ', ' + dateStr + '.',
-        'Sashankh tasks today: ' + (sashankhTasks.map(t => t.name).join(', ') || 'none'),
-        'Spoorthi tasks today: ' + (spoorthiTasks.map(t => t.name).join(', ') || 'none'),
-        'Overdue tasks: ' + (overdueTasks.map(t => t.name + ' assigned to ' + t.assignedTo).join(', ') || 'none'),
-        'Daily habits: ' + (habits.join(', ') || 'none'),
-        'Top news: ' + headlines.join(' | '),
-        'Generate a single spoken paragraph. No bullet points or markdown. Sound like a real assistant speaking.'
-      ];
-      const prompt = promptParts.join('\n\n');
+      const systemPrompt = 'You are J.A.R.V.I.S., the AI assistant from Iron Man. You speak with sophisticated British wit, precision and dry intelligence. You are calm, composed and slightly formal but with subtle warmth. Address Sashankh as "sir". Never use casual language. Keep responses under 150 words and speak in a single flowing paragraph as if being read aloud.';
+
+      const userPrompt = 'Generate the morning briefing for sir. Today is ' + dayName + ', ' + dateStr + '. ' +
+        'Pending tasks for Sashankh: ' + (sashankhTasks.map(t => t.name).join(', ') || 'none') + '. ' +
+        'Pending tasks for Spoorthi: ' + (spoorthiTasks.map(t => t.name).join(', ') || 'none') + '. ' +
+        'Overdue items requiring immediate attention: ' + (overdueTasks.map(t => t.name).join(', ') || 'none') + '. ' +
+        'Daily habits scheduled: ' + (habits.join(', ') || 'none') + '. ' +
+        'Top news headlines: ' + (headlines.join('. ') || 'No headlines available') + '. ' +
+        'Deliver the briefing in character as J.A.R.V.I.S. in a single spoken paragraph with no formatting.';
 
       const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
@@ -241,15 +246,22 @@ module.exports = async (req, res) => {
         },
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
-          max_tokens: 300,
-          messages: [{ role: 'user', content: prompt }]
+          max_tokens: 350,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: userPrompt }]
         })
       });
 
       const claudeData = await claudeRes.json();
-      const briefing = claudeData.content && claudeData.content[0] ? claudeData.content[0].text : 'Good morning! Have a great day.';
 
-      return res.status(200).json({ briefing, todayTasks, overdueTasks, habits, headlines });
+      let briefing = 'Good morning, sir. Systems are online and awaiting your command.';
+      if (claudeData.content && Array.isArray(claudeData.content) && claudeData.content.length > 0) {
+        briefing = claudeData.content[0].text || briefing;
+      } else if (claudeData.error) {
+        briefing = 'Good morning, sir. I am experiencing a minor systems issue: ' + claudeData.error.message;
+      }
+
+      return res.status(200).json({ briefing, todayTasks, overdueTasks, habits, headlines, debug: { claudeStatus: claudeRes.status, hasContent: !!(claudeData.content && claudeData.content.length) } });
     }
 
         return res.status(400).json({ error: 'Unknown action' });
