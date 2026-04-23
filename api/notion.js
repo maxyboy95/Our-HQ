@@ -91,15 +91,6 @@ module.exports = async (req, res) => {
       if (!habitsRes.results) return res.status(500).json({ error: `Habits DB failed: ${JSON.stringify(habitsRes)}` });
       if (!logsRes.results) return res.status(500).json({ error: `Habit Log DB failed: ${JSON.stringify(logsRes)}` });
 
-      const goals = goalsRes.results.map(p => ({
-        id: p.id,
-        name: getTitle(p),
-        owner: getSelect(p, 'Owner'),
-        category: getSelect(p, 'Category'),
-        dueDate: getDate(p, 'Due Date'),
-        status: getSelect(p, 'Status')
-      }));
-
       const tasks = tasksRes.results.map(p => ({
         id: p.id,
         name: getTitle(p),
@@ -108,6 +99,32 @@ module.exports = async (req, res) => {
         done: getCheckbox(p, 'Done'),
         goalIds: getRelationIds(p, 'Goals')
       }));
+
+      const goalProgressMap = {};
+      tasks.forEach(t => {
+        (t.goalIds || []).forEach(gid => {
+          if (!goalProgressMap[gid]) goalProgressMap[gid] = { total: 0, done: 0 };
+          goalProgressMap[gid].total++;
+          if (t.done) goalProgressMap[gid].done++;
+        });
+      });
+
+      const goals = goalsRes.results.map(p => {
+        const gid = p.id;
+        const prog = goalProgressMap[gid];
+        const progress = prog && prog.total > 0 ? Math.round((prog.done / prog.total) * 100) : 0;
+        return {
+          id: gid,
+          name: getTitle(p),
+          owner: getSelect(p, 'Owner'),
+          category: getSelect(p, 'Category'),
+          dueDate: getDate(p, 'Due Date'),
+          status: getSelect(p, 'Status'),
+          progress,
+          taskCount: prog ? prog.total : 0,
+          doneCount: prog ? prog.done : 0
+        };
+      });
 
       const habits = habitsRes.results.map(p => ({
         id: p.id,
