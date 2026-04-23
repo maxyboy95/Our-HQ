@@ -524,10 +524,13 @@ function renderGoalsAndTasks() {
       </div>`;
 
     if (gid !== 'misc') {
+      const taskCount = goal.taskCount || 0;
+      const doneCount = goal.doneCount || 0;
       html += `<div class="goal-progress-row">
         <div class="goal-pbar"><div class="goal-pfill" style="width:${pct}%;background:${color};"></div></div>
         <span class="goal-pct">${pct}%</span>
-      </div>`;
+      </div>
+      ${taskCount > 0 ? `<div style="font-size:11px;color:var(--text3);margin-top:3px;">${doneCount} of ${taskCount} tasks done</div>` : ''}`;
     }
 
     html += `<div class="goal-tasks${isOpen ? ' open' : ''}">`;
