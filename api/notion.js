@@ -179,7 +179,7 @@ module.exports = async (req, res) => {
       const normAssignee = assigneeMap[(assignee || '').toLowerCase()] || assignee || 'Sashankh';
       const properties = {
         Name: { title: [{ text: { content: name || 'Untitled task' } }] },
-        'Assigned to': { select: { name: normAssignee } },
+        'Assigned To': { select: { name: normAssignee } },
         Done: { checkbox: false }
       };
       if (dueDate) properties['Due Date'] = { date: { start: dueDate } };
