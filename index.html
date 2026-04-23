@@ -627,9 +627,16 @@ async function getBriefing() {
 }
 
 function listVoices() {
-  const voices = window.speechSynthesis.getVoices();
-  const names = voices.map(v => v.name + ' (' + v.lang + ')').join('\n');
-  alert('Available voices:\n' + names);
+  const loadAndList = () => {
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length === 0) {
+      setTimeout(loadAndList, 200);
+      return;
+    }
+    const names = voices.map(v => v.name + ' (' + v.lang + ')').join('\n');
+    alert('Available voices:\n' + names);
+  };
+  loadAndList();
 }
 
 function speakText(text) {
@@ -639,8 +646,7 @@ function speakText(text) {
   }
   window.speechSynthesis.cancel();
 
-  const trySpeak = () => {
-    const voices = window.speechSynthesis.getVoices();
+  const doSpeak = (voices) => {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 0.88;
     utterance.pitch = 0.8;
@@ -654,31 +660,39 @@ function speakText(text) {
       const n = v.name.toLowerCase();
       return maleKeywords.some(k => n.includes(k)) && !femaleKeywords.some(k => n.includes(k));
     });
-
     const gbVoice = enVoices.find(v => v.lang === 'en-GB' && !femaleKeywords.some(k => v.name.toLowerCase().includes(k)));
     const usVoice = enVoices.find(v => v.lang === 'en-US' && !femaleKeywords.some(k => v.name.toLowerCase().includes(k)));
-
     const selected = maleVoice || gbVoice || usVoice || enVoices[0];
     if (selected) utterance.voice = selected;
 
-  utterance.onstart = () => {
-    isSpeaking = true;
-    document.getElementById('stop-btn').style.display = 'flex';
-    document.getElementById('play-btn').style.display = 'none';
-  };
-  utterance.onend = () => {
-    isSpeaking = false;
-    document.getElementById('stop-btn').style.display = 'none';
-    document.getElementById('play-btn').style.display = 'flex';
-    document.getElementById('play-label').textContent = 'Play again';
-  };
-  utterance.onerror = () => {
-    isSpeaking = false;
-    document.getElementById('stop-btn').style.display = 'none';
-    document.getElementById('play-btn').style.display = 'flex';
+    utterance.onstart = () => {
+      isSpeaking = true;
+      document.getElementById('stop-btn').style.display = 'flex';
+      document.getElementById('play-btn').style.display = 'none';
+    };
+    utterance.onend = () => {
+      isSpeaking = false;
+      document.getElementById('stop-btn').style.display = 'none';
+      document.getElementById('play-btn').style.display = 'flex';
+      document.getElementById('play-label').textContent = 'Play again';
+    };
+    utterance.onerror = () => {
+      isSpeaking = false;
+      document.getElementById('stop-btn').style.display = 'none';
+      document.getElementById('play-btn').style.display = 'flex';
+    };
+
+    window.speechSynthesis.speak(utterance);
   };
 
-  window.speechSynthesis.speak(utterance);
+  const voices = window.speechSynthesis.getVoices();
+  if (voices.length > 0) {
+    doSpeak(voices);
+  } else {
+    window.speechSynthesis.onvoiceschanged = () => {
+      doSpeak(window.speechSynthesis.getVoices());
+    };
+  }
 }
 
 function stopSpeech() {
@@ -687,8 +701,6 @@ function stopSpeech() {
   document.getElementById('stop-btn').style.display = 'none';
   document.getElementById('play-btn').style.display = 'flex';
 }
-
-window.speechSynthesis.onvoiceschanged = () => {};
 
 loadData();
 
