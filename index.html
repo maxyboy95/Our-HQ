@@ -652,17 +652,9 @@ function speakText(text) {
     utterance.pitch = 0.8;
     utterance.volume = 1;
 
-    const maleKeywords = ['male', 'man', 'guy', 'david', 'george', 'daniel', 'arthur', 'james', 'mark', 'paul', 'john', 'peter', 'thomas', 'henry', 'william', 'richard'];
-    const femaleKeywords = ['female', 'woman', 'girl', 'zira', 'hazel', 'susan', 'heera', 'sonia', 'karen', 'samantha', 'victoria', 'moira', 'fiona', 'tessa', 'veena'];
-
-    const enVoices = voices.filter(v => v.lang.startsWith('en'));
-    const maleVoice = enVoices.find(v => {
-      const n = v.name.toLowerCase();
-      return maleKeywords.some(k => n.includes(k)) && !femaleKeywords.some(k => n.includes(k));
-    });
-    const gbVoice = enVoices.find(v => v.lang === 'en-GB' && !femaleKeywords.some(k => v.name.toLowerCase().includes(k)));
-    const usVoice = enVoices.find(v => v.lang === 'en-US' && !femaleKeywords.some(k => v.name.toLowerCase().includes(k)));
-    const selected = maleVoice || gbVoice || usVoice || enVoices[0];
+    const selected = voices.find(v => v.lang === 'en-GB') ||
+                      voices.find(v => v.lang === 'en-US') ||
+                      voices.find(v => v.lang.startsWith('en'));
     if (selected) utterance.voice = selected;
 
     utterance.onstart = () => {
