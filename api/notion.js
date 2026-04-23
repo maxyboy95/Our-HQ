@@ -200,7 +200,7 @@ module.exports = async (req, res) => {
       const [tasksRes, habitsRes, newsRes] = await Promise.all([
         queryDatabase(TASKS_DB),
         queryDatabase(HABITS_DB),
-        fetch('https://newsapi.org/v2/top-headlines?country=in&pageSize=5&apiKey=' + NEWS_API_KEY)
+        fetch('https://newsapi.org/v2/everything?q=india&sortBy=publishedAt&pageSize=5&language=en&apiKey=' + NEWS_API_KEY)
       ]);
 
       const allTasks = tasksRes.results.map(p => ({
@@ -245,7 +245,7 @@ module.exports = async (req, res) => {
           'anthropic-version': '2023-06-01'
         },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
+          model: 'claude-sonnet-4-5',
           max_tokens: 350,
           system: systemPrompt,
           messages: [{ role: 'user', content: userPrompt }]
