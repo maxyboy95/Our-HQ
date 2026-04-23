@@ -151,6 +151,40 @@
   .briefing-headlines { margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 12px; }
   .headline-item { font-size: 12px; opacity: 0.85; padding: 3px 0; line-height: 1.4; }
   .headline-dot { display: inline-block; width: 4px; height: 4px; background: white; border-radius: 50%; margin-right: 6px; vertical-align: middle; opacity: 0.6; }
+
+  .jarvis-fab { position: fixed; bottom: 5rem; right: 1.5rem; width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #1D9E75, #378ADD); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: white; font-family: 'Outfit', sans-serif; z-index: 150; box-shadow: 0 4px 16px rgba(29,158,117,0.45); transition: transform 0.15s; }
+  .jarvis-fab:hover { transform: scale(1.08); }
+  .jarvis-overlay { position: fixed; inset: 0; background: #0a0e1a; z-index: 300; display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); }
+  .jarvis-overlay.open { transform: translateY(0); }
+  .jarvis-hdr { padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 0.5px solid rgba(255,255,255,0.08); flex-shrink: 0; }
+  .jarvis-hdr-title { font-size: 14px; font-weight: 600; color: #1D9E75; letter-spacing: 0.08em; }
+  .jarvis-hdr-status { font-size: 11px; color: rgba(255,255,255,0.4); }
+  .jarvis-close-btn { width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.08); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.6); font-size: 14px; font-family: 'Outfit', sans-serif; }
+  .jarvis-chat { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: 12px; }
+  .jarvis-msg { display: flex; gap: 8px; align-items: flex-start; }
+  .jarvis-msg-avatar { width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, #1D9E75, #378ADD); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: white; margin-top: 2px; }
+  .jarvis-bubble { background: rgba(29,158,117,0.1); border: 0.5px solid rgba(29,158,117,0.2); border-radius: 12px 12px 12px 2px; padding: 10px 12px; font-size: 13px; color: rgba(255,255,255,0.9); line-height: 1.6; max-width: 85%; }
+  .user-msg { display: flex; justify-content: flex-end; }
+  .user-bubble { background: linear-gradient(135deg, #1D9E75, #378ADD); border-radius: 12px 12px 2px 12px; padding: 10px 12px; font-size: 13px; color: white; line-height: 1.6; max-width: 85%; }
+  .jarvis-thinking { display: flex; gap: 4px; align-items: center; padding: 10px 12px; }
+  .thinking-dot { width: 6px; height: 6px; border-radius: 50%; background: #1D9E75; animation: thinking 1.2s infinite; }
+  .thinking-dot:nth-child(2) { animation-delay: 0.2s; }
+  .thinking-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes thinking { 0%,100%{opacity:0.3;transform:scale(0.8);} 50%{opacity:1;transform:scale(1);} }
+  .jarvis-listen-screen { position: absolute; inset: 0; background: #0a0e1a; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+  .jarvis-listen-screen.active { opacity: 1; pointer-events: all; }
+  .listen-ring-outer { width: 120px; height: 120px; border-radius: 50%; border: 1.5px solid rgba(29,158,117,0.25); display: flex; align-items: center; justify-content: center; animation: listenPulse 1.8s infinite; }
+  .listen-ring-mid { width: 90px; height: 90px; border-radius: 50%; border: 1.5px solid rgba(29,158,117,0.4); display: flex; align-items: center; justify-content: center; }
+  .listen-ring-core { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #1D9E75, #378ADD); display: flex; align-items: center; justify-content: center; }
+  @keyframes listenPulse { 0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(1.05);opacity:0.7;} }
+  .listen-label { font-size: 11px; color: rgba(255,255,255,0.4); letter-spacing: 0.1em; text-transform: uppercase; }
+  .listen-transcript { font-size: 14px; color: rgba(255,255,255,0.8); font-style: italic; text-align: center; padding: 0 2rem; min-height: 20px; }
+  .jarvis-input-row { padding: 1rem 1.25rem 2rem; display: flex; align-items: center; gap: 10px; flex-shrink: 0; border-top: 0.5px solid rgba(255,255,255,0.06); }
+  .jarvis-text-input { flex: 1; background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.12); border-radius: 20px; padding: 8px 14px; font-size: 13px; color: white; font-family: 'Outfit', sans-serif; outline: none; }
+  .jarvis-text-input::placeholder { color: rgba(255,255,255,0.3); }
+  .jarvis-mic-btn { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #1D9E75, #378ADD); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: box-shadow 0.2s; }
+  .jarvis-mic-btn.listening { box-shadow: 0 0 0 8px rgba(29,158,117,0.2), 0 0 0 16px rgba(29,158,117,0.1); }
+  .jarvis-send-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.08); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 </style>
 </head>
 <body>
@@ -257,6 +291,59 @@
     <div id="vs-bars"><div class="loading">Loading...</div></div>
   </div>
 
+</div>
+
+<button class="jarvis-fab" onclick="openJarvis()" title="Open Jarvis">J</button>
+
+<div class="jarvis-overlay" id="jarvis-overlay">
+  <div class="jarvis-hdr">
+    <div>
+      <div class="jarvis-hdr-title">J.A.R.V.I.S.</div>
+      <div class="jarvis-hdr-status" id="jarvis-status">Systems online</div>
+    </div>
+    <button class="jarvis-close-btn" onclick="closeJarvis()">✕</button>
+  </div>
+
+  <div class="jarvis-chat" id="jarvis-chat">
+    <div class="jarvis-msg">
+      <div class="jarvis-msg-avatar">J</div>
+      <div class="jarvis-bubble">Good day, sir. J.A.R.V.I.S. at your service. You may speak or type your request and I shall attend to it promptly.</div>
+    </div>
+  </div>
+
+  <div class="jarvis-listen-screen" id="jarvis-listen-screen">
+    <div class="listen-ring-outer">
+      <div class="listen-ring-mid">
+        <div class="listen-ring-core">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <rect x="9" y="2" width="6" height="11" rx="3" fill="white"/>
+            <path d="M5 10a7 7 0 0014 0" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="12" y1="19" x2="12" y2="22" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <div class="listen-label">Listening</div>
+    <div class="listen-transcript" id="listen-transcript">Speak now, sir...</div>
+    <button onclick="stopListening()" style="font-size:12px;color:rgba(255,255,255,0.5);background:none;border:0.5px solid rgba(255,255,255,0.2);border-radius:20px;padding:6px 16px;cursor:pointer;font-family:'Outfit',sans-serif;">Cancel</button>
+  </div>
+
+  <div class="jarvis-input-row">
+    <input type="text" class="jarvis-text-input" id="jarvis-text-input" placeholder="Or type your request..." onkeydown="if(event.key==='Enter') sendJarvisText()">
+    <button class="jarvis-send-btn" onclick="sendJarvisText()" title="Send">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+        <path d="M22 2L11 13" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round"/>
+        <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <button class="jarvis-mic-btn" id="jarvis-mic-btn" onclick="startListening()" title="Speak">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <rect x="9" y="2" width="6" height="11" rx="3" fill="white"/>
+        <path d="M5 10a7 7 0 0014 0" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="12" y1="19" x2="12" y2="22" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
 </div>
 
 <button class="fab" onclick="openModal()" aria-label="Add task"><div class="fab-icon"></div></button>
@@ -692,6 +779,186 @@ function stopSpeech() {
   isSpeaking = false;
   document.getElementById('stop-btn').style.display = 'none';
   document.getElementById('play-btn').style.display = 'flex';
+}
+
+
+let jarvisHistory = [];
+let recognition = null;
+let isListening = false;
+let jarvisOpen = false;
+
+function openJarvis() {
+  jarvisOpen = true;
+  document.getElementById('jarvis-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeJarvis() {
+  jarvisOpen = false;
+  document.getElementById('jarvis-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+  stopListening();
+}
+
+function appendMessage(role, text) {
+  const chat = document.getElementById('jarvis-chat');
+  const div = document.createElement('div');
+  if (role === 'jarvis') {
+    div.className = 'jarvis-msg';
+    div.innerHTML = '<div class="jarvis-msg-avatar">J</div><div class="jarvis-bubble">' + text + '</div>';
+  } else {
+    div.className = 'user-msg';
+    div.innerHTML = '<div class="user-bubble">' + text + '</div>';
+  }
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function showThinking() {
+  const chat = document.getElementById('jarvis-chat');
+  const div = document.createElement('div');
+  div.className = 'jarvis-msg';
+  div.id = 'jarvis-thinking';
+  div.innerHTML = '<div class="jarvis-msg-avatar">J</div><div class="jarvis-bubble jarvis-thinking"><div class="thinking-dot"></div><div class="thinking-dot"></div><div class="thinking-dot"></div></div>';
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function removeThinking() {
+  const el = document.getElementById('jarvis-thinking');
+  if (el) el.remove();
+}
+
+async function sendToJarvis(userText) {
+  if (!userText.trim()) return;
+  appendMessage('user', userText);
+  jarvisHistory.push({ role: 'user', content: userText });
+  document.getElementById('jarvis-status').textContent = 'Processing...';
+  showThinking();
+
+  try {
+    const res = await fetch('/api/notion?action=jarvis', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: userText,
+        history: jarvisHistory.slice(-10),
+        context: {
+          goals: appData.goals,
+          tasks: appData.tasks,
+          habits: appData.habits,
+          today: new Date().toISOString().split('T')[0],
+          dayName: new Date().toLocaleDateString('en-US', { weekday: 'long' }),
+          dateStr: new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+        }
+      })
+    });
+
+    const data = await res.json();
+    removeThinking();
+
+    if (data.error) throw new Error(data.error);
+
+    const reply = data.reply || 'I apologise sir, I encountered an issue.';
+    appendMessage('jarvis', reply);
+    jarvisHistory.push({ role: 'assistant', content: reply });
+    document.getElementById('jarvis-status').textContent = 'Systems online';
+    speakJarvis(reply);
+
+    if (data.action) {
+      await handleJarvisAction(data.action, data.actionData);
+    }
+
+  } catch(err) {
+    removeThinking();
+    const errMsg = 'My apologies sir, I seem to be experiencing a systems issue: ' + err.message;
+    appendMessage('jarvis', errMsg);
+    document.getElementById('jarvis-status').textContent = 'Systems online';
+  }
+}
+
+async function handleJarvisAction(action, data) {
+  if (action === 'addTask') {
+    try {
+      await fetch('/api/notion?action=addTask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      await loadData();
+    } catch(e) {}
+  }
+  if (action === 'toggleTask') {
+    await toggleTask(data.pageId, data.done);
+  }
+  if (action === 'reload') {
+    await loadData();
+  }
+}
+
+function sendJarvisText() {
+  const input = document.getElementById('jarvis-text-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  sendToJarvis(text);
+}
+
+function startListening() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    alert('Voice input is not supported in this browser. Please use Chrome.');
+    return;
+  }
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SpeechRecognition();
+  recognition.lang = 'en-GB';
+  recognition.continuous = false;
+  recognition.interimResults = true;
+
+  document.getElementById('jarvis-listen-screen').classList.add('active');
+  document.getElementById('jarvis-mic-btn').classList.add('listening');
+  document.getElementById('listen-transcript').textContent = 'Speak now, sir...';
+  isListening = true;
+
+  recognition.onresult = (event) => {
+    const transcript = Array.from(event.results).map(r => r[0].transcript).join('');
+    document.getElementById('listen-transcript').textContent = transcript;
+    if (event.results[event.results.length - 1].isFinal) {
+      stopListening();
+      sendToJarvis(transcript);
+    }
+  };
+
+  recognition.onerror = () => stopListening();
+  recognition.onend = () => stopListening();
+  recognition.start();
+}
+
+function stopListening() {
+  if (recognition) { try { recognition.stop(); } catch(e) {} recognition = null; }
+  isListening = false;
+  document.getElementById('jarvis-listen-screen').classList.remove('active');
+  document.getElementById('jarvis-mic-btn').classList.remove('listening');
+}
+
+function speakJarvis(text) {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const doSpeak = (voices) => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.88;
+    utterance.pitch = 0.8;
+    utterance.volume = 1;
+    const selected = voices.find(v => v.lang === 'en-GB') ||
+                     voices.find(v => v.lang === 'en-US') ||
+                     voices.find(v => v.lang.startsWith('en'));
+    if (selected) utterance.voice = selected;
+    window.speechSynthesis.speak(utterance);
+  };
+  const voices = window.speechSynthesis.getVoices();
+  if (voices.length > 0) { doSpeak(voices); }
+  else { window.speechSynthesis.onvoiceschanged = () => doSpeak(window.speechSynthesis.getVoices()); }
 }
 
 loadData();
