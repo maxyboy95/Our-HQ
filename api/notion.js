@@ -200,7 +200,7 @@ module.exports = async (req, res) => {
       const [tasksRes, habitsRes, newsRes] = await Promise.all([
         queryDatabase(TASKS_DB),
         queryDatabase(HABITS_DB),
-        fetch(`https://newsapi.org/v2/top-headlines?country=in&pageSize=5&apiKey=${NEWS_API_KEY}`)
+        fetch('https://newsapi.org/v2/top-headlines?country=in&pageSize=5&apiKey=' + NEWS_API_KEY)
       ]);
 
       const tasks = tasksRes.results.map(p => ({
@@ -217,20 +217,20 @@ module.exports = async (req, res) => {
       const newsData = await newsRes.json();
       const headlines = (newsData.articles || []).slice(0, 5).map(a => a.title).filter(Boolean);
 
-      const sashankhTasks = todayTasks.filter(t => t.assignedTo?.toLowerCase() === 'sashankh' || t.assignedTo?.toLowerCase() === 'shared');
-      const spoorthiTasks = todayTasks.filter(t => t.assignedTo?.toLowerCase() === 'spoorthi' || t.assignedTo?.toLowerCase() === 'shared');
+      const sashankhTasks = todayTasks.filter(t => t.assignedTo && t.assignedTo.toLowerCase() === 'sashankh' || t.assignedTo && t.assignedTo.toLowerCase() === 'shared');
+      const spoorthiTasks = todayTasks.filter(t => t.assignedTo && t.assignedTo.toLowerCase() === 'spoorthi' || t.assignedTo && t.assignedTo.toLowerCase() === 'shared');
 
-      const prompt = \`You are a friendly personal assistant called Jarvis. Generate a warm, natural morning briefing for Sashankh. Keep it conversational, upbeat and under 120 words. Speak directly to Sashankh.
-
-Today is \${dayName}, \${dateStr}.
-
-Sashankh's tasks today: \${sashankhTasks.map(t => t.name).join(', ') || 'none'}
-Spoorthi's tasks today: \${spoorthiTasks.map(t => t.name).join(', ') || 'none'}
-Overdue tasks: \${overdueTasks.map(t => t.name + ' (assigned to ' + t.assignedTo + ')').join(', ') || 'none'}
-Daily habits to complete: \${habits.join(', ') || 'none'}
-Top news headlines: \${headlines.join(' | ')}
-
-Generate a single spoken paragraph briefing. Do not use bullet points or markdown. Make it sound like a real assistant speaking.\`;
+      const promptParts = [
+        'You are a friendly personal assistant called Jarvis. Generate a warm, natural morning briefing for Sashankh. Keep it conversational, upbeat and under 120 words. Speak directly to Sashankh.',
+        'Today is ' + dayName + ', ' + dateStr + '.',
+        'Sashankh tasks today: ' + (sashankhTasks.map(t => t.name).join(', ') || 'none'),
+        'Spoorthi tasks today: ' + (spoorthiTasks.map(t => t.name).join(', ') || 'none'),
+        'Overdue tasks: ' + (overdueTasks.map(t => t.name + ' assigned to ' + t.assignedTo).join(', ') || 'none'),
+        'Daily habits: ' + (habits.join(', ') || 'none'),
+        'Top news: ' + headlines.join(' | '),
+        'Generate a single spoken paragraph. No bullet points or markdown. Sound like a real assistant speaking.'
+      ];
+      const prompt = promptParts.join('\n\n');
 
       const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
@@ -247,7 +247,7 @@ Generate a single spoken paragraph briefing. Do not use bullet points or markdow
       });
 
       const claudeData = await claudeRes.json();
-      const briefing = claudeData.content?.[0]?.text || 'Good morning! Have a great day.';
+      const briefing = claudeData.content && claudeData.content[0] ? claudeData.content[0].text : 'Good morning! Have a great day.';
 
       return res.status(200).json({ briefing, todayTasks, overdueTasks, habits, headlines });
     }
