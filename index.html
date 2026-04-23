@@ -453,26 +453,52 @@ function renderGoals() {
 function renderTasks() {
   const { tasks } = appData;
   const today = new Date().toISOString().split('T')[0];
-  const sorted = [...tasks].sort((a,b) => {
-    if(a.done !== b.done) return a.done ? 1 : -1;
-    return (a.dueDate||'') < (b.dueDate||'') ? -1 : 1;
+  const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+
+  const pending = tasks.filter(t => !t.done && !t.saving).sort((a,b) => {
+    const aOver = a.dueDate && a.dueDate < today;
+    const bOver = b.dueDate && b.dueDate < today;
+    if(aOver !== bOver) return aOver ? -1 : 1;
+    return (a.dueDate||'9999') < (b.dueDate||'9999') ? -1 : 1;
   });
 
-  document.getElementById('tasks-list').innerHTML = sorted.length === 0
-    ? '<div class="loading">No tasks found</div>'
-    : sorted.map(t => {
-        const isOverdue = t.dueDate && t.dueDate < today && !t.done;
-        const dateLabel = isOverdue ? 'Overdue' : (t.dueDate ? new Date(t.dueDate+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '');
-        if(t.saving) return `<div class="saving-row"><div class="pulse-chk"></div><span class="tlbl" style="color:var(--text3);">${t.name} — saving...</span></div>`;
-        return `<div class="task-row">
-          <div class="chk${t.done?' on':''}" onclick="toggleTask('${t.id}',${!t.done})"></div>
-          <span class="tlbl${t.done?' done':''}" title="${t.name}">${t.name}</span>
-          ${ownerBadge(t.assignedTo)}
-          <span class="tdate${isOverdue?' overdue':''}">${dateLabel}</span>
-        </div>`;
-      }).join('');
+  const recentlyDone = tasks.filter(t => t.done && t.dueDate && t.dueDate >= yesterday);
+  const saving = tasks.filter(t => t.saving);
 
-  const overdue = tasks.filter(t => t.dueDate && t.dueDate < today && !t.done).length;
+  let html = '';
+
+  if(saving.length) {
+    html += saving.map(t => `<div class="saving-row"><div class="pulse-chk"></div><span class="tlbl" style="color:var(--text3);">${t.name} — saving...</span></div>`).join('');
+  }
+
+  if(pending.length === 0 && saving.length === 0) {
+    html += '<div class="loading" style="padding:0.75rem 0;">All clear, sir.</div>';
+  } else {
+    html += pending.map(t => {
+      const isOverdue = t.dueDate && t.dueDate < today;
+      const dateLabel = isOverdue ? 'Overdue' : (t.dueDate ? new Date(t.dueDate+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '');
+      return `<div class="task-row">
+        <div class="chk" onclick="toggleTask('${t.id}',true)"></div>
+        <span class="tlbl" title="${t.name}">${t.name}</span>
+        ${ownerBadge(t.assignedTo)}
+        <span class="tdate${isOverdue?' overdue':''}">${dateLabel}</span>
+      </div>`;
+    }).join('');
+  }
+
+  if(recentlyDone.length > 0) {
+    html += `<div style="font-size:10px;font-weight:600;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;margin:10px 0 6px;padding-top:10px;border-top:0.5px solid var(--border);">Recently completed</div>`;
+    html += recentlyDone.map(t => `
+      <div class="task-row" style="opacity:0.5;">
+        <div class="chk on" onclick="toggleTask('${t.id}',false)" style="cursor:pointer;"></div>
+        <span class="tlbl done" title="${t.name}">${t.name}</span>
+        ${ownerBadge(t.assignedTo)}
+      </div>`).join('');
+  }
+
+  document.getElementById('tasks-list').innerHTML = html;
+
+  const overdue = pending.filter(t => t.dueDate && t.dueDate < today).length;
   const el = document.getElementById('kpi-overdue');
   el.textContent = overdue;
   el.style.color = overdue > 0 ? 'var(--danger)' : 'var(--text)';
