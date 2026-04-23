@@ -185,6 +185,23 @@
   .jarvis-mic-btn { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #1D9E75, #378ADD); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: box-shadow 0.2s; }
   .jarvis-mic-btn.listening { box-shadow: 0 0 0 8px rgba(29,158,117,0.2), 0 0 0 16px rgba(29,158,117,0.1); }
   .jarvis-send-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.08); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+  .goal-card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radlg); padding: 1rem 1.25rem; margin-bottom: 10px; }
+  .goal-card-header { display: flex; justify-content: space-between; align-items: flex-start; cursor: pointer; user-select: none; }
+  .goal-card-title { font-size: 14px; font-weight: 500; color: var(--text); }
+  .goal-card-meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .goal-card-meta.has-overdue { color: var(--danger); }
+  .goal-chevron { font-size: 11px; color: var(--text3); margin-left: 8px; transition: transform 0.2s; flex-shrink: 0; margin-top: 2px; }
+  .goal-chevron.open { transform: rotate(180deg); }
+  .goal-progress-row { display: flex; align-items: center; gap: 8px; margin: 8px 0 0; }
+  .goal-pbar { flex: 1; height: 5px; background: var(--bg2); border-radius: 3px; overflow: hidden; }
+  .goal-pfill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+  .goal-pct { font-size: 12px; color: var(--text3); width: 32px; text-align: right; flex-shrink: 0; }
+  .goal-tasks { border-top: 0.5px solid var(--border); margin-top: 10px; padding-top: 8px; display: none; }
+  .goal-tasks.open { display: block; }
+  .completed-section { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radlg); padding: 1rem 1.25rem; margin-bottom: 1.5rem; }
+  .completed-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 0.5px solid var(--border); opacity: 0.5; }
+  .completed-row:last-child { border-bottom: none; }
 </style>
 </head>
 <body>
@@ -242,15 +259,16 @@
     <div class="stat"><div class="stat-label">Current leader</div><div class="stat-val" id="kpi-leader" style="font-size:16px;padding-top:3px;">—</div><div class="stat-sub" id="kpi-leader-sub">this week</div></div>
   </div>
 
-  <div class="two-col">
-    <div class="card">
-      <div class="card-hdr"><span class="sec-label">Goals</span></div>
-      <div id="goals-list"><div class="loading">Loading...</div></div>
+  <div style="margin-bottom:1.5rem;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <span class="sec-label">Goals & tasks</span>
     </div>
-    <div class="card">
-      <div class="card-hdr"><span class="sec-label">Tasks</span></div>
-      <div id="tasks-list"><div class="loading">Loading...</div></div>
-    </div>
+    <div id="goals-tasks-list"><div class="loading">Loading...</div></div>
+  </div>
+
+  <div class="completed-section" id="completed-section" style="display:none;">
+    <div class="card-hdr"><span class="sec-label">Recently completed</span></div>
+    <div id="completed-list"></div>
   </div>
 
   <div class="habit-card">
@@ -436,73 +454,125 @@ async function loadData() {
   }
 }
 
-function renderGoals() {
-  const { goals } = appData;
-  const activeGoals = goals.filter(g => g.status !== 'Done');
-  document.getElementById('goals-list').innerHTML = goals.length === 0
-    ? '<div class="loading">No goals found</div>'
-    : goals.map(g => `
-      <div class="goal-row">
-        ${ownerBadge(g.owner)}
-        <span class="goal-name" title="${g.name}">${g.name}</span>
-        ${statusBadge(g.status)}
-      </div>`).join('');
-  document.getElementById('kpi-goals').textContent = activeGoals.length;
+const goalColors = { shared: '#1D9E75', sashankh: '#378ADD', spoorthi: '#D4537E' };
+const expandedGoals = new Set();
+
+function toggleGoal(goalId) {
+  if (expandedGoals.has(goalId)) expandedGoals.delete(goalId);
+  else expandedGoals.add(goalId);
+  renderGoalsAndTasks();
 }
 
-function renderTasks() {
-  const { tasks } = appData;
+function renderGoalsAndTasks() {
+  const { goals, tasks } = appData;
   const today = new Date().toISOString().split('T')[0];
   const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
 
-  const pending = tasks.filter(t => !t.done && !t.saving).sort((a,b) => {
-    const aOver = a.dueDate && a.dueDate < today;
-    const bOver = b.dueDate && b.dueDate < today;
-    if(aOver !== bOver) return aOver ? -1 : 1;
-    return (a.dueDate||'9999') < (b.dueDate||'9999') ? -1 : 1;
-  });
-
+  const pendingTasks = tasks.filter(t => !t.done && !t.saving);
   const recentlyDone = tasks.filter(t => t.done && t.dueDate && t.dueDate >= yesterday);
-  const saving = tasks.filter(t => t.saving);
+  const savingTasks = tasks.filter(t => t.saving);
+
+  const activeGoals = goals.filter(g => g.status !== 'Done');
+  document.getElementById('kpi-goals').textContent = activeGoals.length;
+
+  const overdue = pendingTasks.filter(t => t.dueDate && t.dueDate < today).length;
+  const overdueEl = document.getElementById('kpi-overdue');
+  overdueEl.textContent = overdue;
+  overdueEl.style.color = overdue > 0 ? 'var(--danger)' : 'var(--text)';
 
   let html = '';
 
-  if(saving.length) {
-    html += saving.map(t => `<div class="saving-row"><div class="pulse-chk"></div><span class="tlbl" style="color:var(--text3);">${t.name} — saving...</span></div>`).join('');
+  if (savingTasks.length) {
+    html += savingTasks.map(t => `<div class="saving-row"><div class="pulse-chk"></div><span class="tlbl" style="color:var(--text3);">${t.name} — saving...</span></div>`).join('');
   }
 
-  if(pending.length === 0 && saving.length === 0) {
-    html += '<div class="loading" style="padding:0.75rem 0;">All clear, sir.</div>';
-  } else {
-    html += pending.map(t => {
-      const isOverdue = t.dueDate && t.dueDate < today;
-      const dateLabel = isOverdue ? 'Overdue' : (t.dueDate ? new Date(t.dueDate+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '');
-      return `<div class="task-row">
-        <div class="chk" onclick="toggleTask('${t.id}',true)"></div>
-        <span class="tlbl" title="${t.name}">${t.name}</span>
-        ${ownerBadge(t.assignedTo)}
-        <span class="tdate${isOverdue?' overdue':''}">${dateLabel}</span>
+  const goalGroups = {};
+  goals.forEach(g => { goalGroups[g.id] = { goal: g, tasks: [] }; });
+  goalGroups['misc'] = { goal: { id: 'misc', name: 'Miscellaneous', owner: 'shared', status: 'In progress' }, tasks: [] };
+
+  pendingTasks.forEach(t => {
+    const goalId = t.goalIds && t.goalIds.length > 0 ? t.goalIds[0] : null;
+    if (goalId && goalGroups[goalId]) goalGroups[goalId].tasks.push(t);
+    else goalGroups['misc'].tasks.push(t);
+  });
+
+  const groupOrder = [...goals.map(g => g.id), 'misc'];
+
+  groupOrder.forEach(gid => {
+    const group = goalGroups[gid];
+    if (!group) return;
+    const { goal, tasks: gTasks } = group;
+    if (gid === 'misc' && gTasks.length === 0) return;
+
+    const isOpen = expandedGoals.has(gid);
+    const color = goalColors[(goal.owner || '').toLowerCase()] || '#888';
+    const overdueCount = gTasks.filter(t => t.dueDate && t.dueDate < today).length;
+    const pct = goal.progress || 0;
+
+    html += `<div class="goal-card">
+      <div class="goal-card-header" onclick="toggleGoal('${gid}')">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="goal-card-title">${goal.name}</span>
+            ${ownerBadge(goal.owner)}
+          </div>
+          <div class="goal-card-meta${overdueCount > 0 ? ' has-overdue' : ''}">
+            ${overdueCount > 0 ? overdueCount + ' overdue · ' : ''}${gTasks.length} pending task${gTasks.length !== 1 ? 's' : ''}
+          </div>
+        </div>
+        <span class="goal-chevron${isOpen ? ' open' : ''}">▼</span>
       </div>`;
-    }).join('');
-  }
 
-  if(recentlyDone.length > 0) {
-    html += `<div style="font-size:10px;font-weight:600;color:var(--text3);letter-spacing:0.06em;text-transform:uppercase;margin:10px 0 6px;padding-top:10px;border-top:0.5px solid var(--border);">Recently completed</div>`;
-    html += recentlyDone.map(t => `
-      <div class="task-row" style="opacity:0.5;">
+    if (gid !== 'misc') {
+      html += `<div class="goal-progress-row">
+        <div class="goal-pbar"><div class="goal-pfill" style="width:${pct}%;background:${color};"></div></div>
+        <span class="goal-pct">${pct}%</span>
+      </div>`;
+    }
+
+    html += `<div class="goal-tasks${isOpen ? ' open' : ''}">`;
+    if (gTasks.length === 0) {
+      html += `<div style="font-size:12px;color:var(--text3);padding:6px 0;font-style:italic;">All clear, sir.</div>`;
+    } else {
+      gTasks.sort((a,b) => {
+        const aOd = a.dueDate && a.dueDate < today;
+        const bOd = b.dueDate && b.dueDate < today;
+        if (aOd !== bOd) return aOd ? -1 : 1;
+        return (a.dueDate||'9999') < (b.dueDate||'9999') ? -1 : 1;
+      }).forEach(t => {
+        const isOverdue = t.dueDate && t.dueDate < today;
+        const dateLabel = isOverdue ? 'Overdue' : (t.dueDate ? new Date(t.dueDate+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '');
+        html += `<div class="task-row">
+          <div class="chk" onclick="toggleTask('${t.id}',true)"></div>
+          <span class="tlbl" title="${t.name}">${t.name}</span>
+          ${ownerBadge(t.assignedTo)}
+          <span class="tdate${isOverdue?' overdue':''}">${dateLabel}</span>
+        </div>`;
+      });
+    }
+    html += `</div></div>`;
+  });
+
+  document.getElementById('goals-tasks-list').innerHTML = html || '<div class="loading">No goals found</div>';
+
+  const completedEl = document.getElementById('completed-section');
+  const completedList = document.getElementById('completed-list');
+  if (recentlyDone.length > 0) {
+    completedEl.style.display = 'block';
+    completedList.innerHTML = recentlyDone.map(t => `
+      <div class="completed-row">
         <div class="chk on" onclick="toggleTask('${t.id}',false)" style="cursor:pointer;"></div>
-        <span class="tlbl done" title="${t.name}">${t.name}</span>
+        <span class="tlbl done">${t.name}</span>
         ${ownerBadge(t.assignedTo)}
       </div>`).join('');
+  } else {
+    completedEl.style.display = 'none';
   }
-
-  document.getElementById('tasks-list').innerHTML = html;
-
-  const overdue = pending.filter(t => t.dueDate && t.dueDate < today).length;
-  const el = document.getElementById('kpi-overdue');
-  el.textContent = overdue;
-  el.style.color = overdue > 0 ? 'var(--danger)' : 'var(--text)';
 }
+
+function renderGoals() { renderGoalsAndTasks(); }
+
+function renderTasks() { renderGoalsAndTasks(); }
 
 function renderHabits() {
   const { habits, todayLogs } = appData;
