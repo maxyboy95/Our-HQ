@@ -188,7 +188,11 @@ module.exports = async (req, res) => {
         body: JSON.stringify({ parent: { database_id: TASKS_DB }, properties })
       });
       const page = await res2.json();
-      if (!res2.ok) return res.status(400).json({ error: 'Notion error: ' + JSON.stringify(page) });
+      if (!res2.ok) {
+        console.error('Notion addTask error:', JSON.stringify(page));
+        console.error('Properties sent:', JSON.stringify(properties));
+        return res.status(400).json({ error: 'Notion error: ' + JSON.stringify(page), propertiesSent: properties });
+      }
       return res.status(200).json({ id: page.id });
     }
 
@@ -267,7 +271,7 @@ module.exports = async (req, res) => {
         if (action === 'jarvis') {
       const { message, history, context } = req.body;
 
-      const systemPrompt = 'You are J.A.R.V.I.S., the AI assistant from Iron Man. Speak with sophisticated British wit, precision and dry intelligence. Address Sashankh as "sir". You have full knowledge of his goals, tasks and habits. You can take actions by including a JSON block at the end of your response in this exact format if needed: ACTION:{"action":"addTask","actionData":{"name":"task name","assignee":"Sashankh","dueDate":"2026-04-23"}} or ACTION:{"action":"reload"} or ACTION:{"action":"toggleTask","actionData":{"pageId":"id","done":true}}. Only include ACTION if the user explicitly asks you to do something. Keep responses under 100 words unless asked for detail.';
+      const systemPrompt = 'You are J.A.R.V.I.S., the AI assistant from Iron Man. Speak with sophisticated British wit, precision and dry intelligence. Address Sashankh as "sir". You have full knowledge of his goals, tasks and habits. Keep responses under 100 words unless asked for detail. CRITICAL RULE: When the user asks you to add a task, you MUST end your response with an ACTION line on its own line in this EXACT format with no spaces or line breaks inside the JSON: ACTION:{"action":"addTask","actionData":{"name":"TASK NAME","assignee":"Sashankh","dueDate":"YYYY-MM-DD"}} - use the date the user mentions or leave dueDate as empty string if not mentioned. For other actions use ACTION:{"action":"reload"} to refresh data. Always include the ACTION line when performing an action - this is mandatory.';
 
       const contextSummary = 'Current date: ' + context.dayName + ', ' + context.dateStr + '. ' +
         'Active goals: ' + context.goals.map(g => g.name + ' (' + g.owner + ')').join(', ') + '. ' +
@@ -302,12 +306,17 @@ module.exports = async (req, res) => {
       let reply = fullReply;
       let actionObj = null;
 
-      const actionMatch = fullReply.match(/ACTION:(\{.*\})/);
+      const actionMatch = fullReply.match(/ACTION:(\{[\s\S]*?\})(?:\s*$)/m);
       if (actionMatch) {
         try {
           actionObj = JSON.parse(actionMatch[1]);
-          reply = fullReply.replace(/ACTION:\{.*\}/, '').trim();
-        } catch(e) {}
+          reply = fullReply.slice(0, fullReply.indexOf('ACTION:')).trim();
+        } catch(e) {
+          console.error('Action parse error:', e.message, actionMatch[1]);
+        }
+      }
+      if (!actionObj && fullReply.toLowerCase().includes('add') && fullReply.toLowerCase().includes('task')) {
+        console.log('Action not parsed from reply:', fullReply.slice(-200));
       }
 
       return res.status(200).json({ reply, action: actionObj ? actionObj.action : null, actionData: actionObj ? actionObj.actionData : null });
