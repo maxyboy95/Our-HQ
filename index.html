@@ -193,6 +193,9 @@
         <div class="stop-icon"></div>
         <span>Stop</span>
       </button>
+      <button class="play-btn" onclick="listVoices()" style="opacity:0.6;">
+        <span>List voices</span>
+      </button>
     </div>
     <div class="briefing-headlines" id="briefing-headlines" style="display:none;"></div>
   </div>
@@ -623,26 +626,40 @@ async function getBriefing() {
   }
 }
 
+function listVoices() {
+  const voices = window.speechSynthesis.getVoices();
+  const names = voices.map(v => v.name + ' (' + v.lang + ')').join('\n');
+  alert('Available voices:\n' + names);
+}
+
 function speakText(text) {
   if (!('speechSynthesis' in window)) {
     alert('Text-to-speech is not supported in this browser. Try Chrome or Safari.');
     return;
   }
   window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.rate = 0.95;
-  utterance.pitch = 1;
-  utterance.volume = 1;
 
-  const voices = window.speechSynthesis.getVoices();
-  const maleVoiceNames = ['Google UK English Male', 'Microsoft George', 'Microsoft David', 'Daniel', 'Arthur', 'Google US English', 'Alex'];
-  const preferred = voices.find(v => maleVoiceNames.includes(v.name)) ||
-                    voices.find(v => v.name.toLowerCase().includes('male') && v.lang.startsWith('en')) ||
-                    voices.find(v => v.name.includes('Daniel') || v.name.includes('Arthur') || v.name.includes('George') || v.name.includes('David')) ||
-                    voices.find(v => v.lang === 'en-GB') ||
-                    voices.find(v => v.lang.startsWith('en') && !v.name.toLowerCase().includes('female') && !v.name.toLowerCase().includes('zira') && !v.name.toLowerCase().includes('hazel') && !v.name.toLowerCase().includes('susan') && !v.name.toLowerCase().includes('heera') && !v.name.toLowerCase().includes('ravi') === false);
-  if (preferred) utterance.voice = preferred;
-  utterance.pitch = 0.85;
+  const trySpeak = () => {
+    const voices = window.speechSynthesis.getVoices();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.88;
+    utterance.pitch = 0.8;
+    utterance.volume = 1;
+
+    const maleKeywords = ['male', 'man', 'guy', 'david', 'george', 'daniel', 'arthur', 'james', 'mark', 'paul', 'john', 'peter', 'thomas', 'henry', 'william', 'richard'];
+    const femaleKeywords = ['female', 'woman', 'girl', 'zira', 'hazel', 'susan', 'heera', 'sonia', 'karen', 'samantha', 'victoria', 'moira', 'fiona', 'tessa', 'veena'];
+
+    const enVoices = voices.filter(v => v.lang.startsWith('en'));
+    const maleVoice = enVoices.find(v => {
+      const n = v.name.toLowerCase();
+      return maleKeywords.some(k => n.includes(k)) && !femaleKeywords.some(k => n.includes(k));
+    });
+
+    const gbVoice = enVoices.find(v => v.lang === 'en-GB' && !femaleKeywords.some(k => v.name.toLowerCase().includes(k)));
+    const usVoice = enVoices.find(v => v.lang === 'en-US' && !femaleKeywords.some(k => v.name.toLowerCase().includes(k)));
+
+    const selected = maleVoice || gbVoice || usVoice || enVoices[0];
+    if (selected) utterance.voice = selected;
 
   utterance.onstart = () => {
     isSpeaking = true;
