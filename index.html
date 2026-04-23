@@ -138,6 +138,19 @@
     .two-col { grid-template-columns: 1fr; }
     body { padding: 1rem; }
   }
+
+  .briefing-card { background: linear-gradient(135deg, #1D9E75, #378ADD); border-radius: var(--radlg); padding: 1.5rem; margin-bottom: 1.5rem; color: white; }
+  .briefing-title { font-size: 13px; font-weight: 600; opacity: 0.8; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 8px; }
+  .briefing-text { font-size: 15px; line-height: 1.7; margin-bottom: 1.25rem; }
+  .briefing-text.loading { opacity: 0.6; font-size: 13px; }
+  .play-btn { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.2); border: 1.5px solid rgba(255,255,255,0.4); color: white; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 500; padding: 8px 16px; border-radius: 20px; cursor: pointer; transition: all 0.15s; }
+  .play-btn:hover { background: rgba(255,255,255,0.3); }
+  .play-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .play-icon { width: 0; height: 0; border-style: solid; border-width: 5px 0 5px 9px; border-color: transparent transparent transparent white; flex-shrink: 0; }
+  .stop-icon { width: 10px; height: 10px; background: white; border-radius: 2px; flex-shrink: 0; }
+  .briefing-headlines { margin-top: 12px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 12px; }
+  .headline-item { font-size: 12px; opacity: 0.85; padding: 3px 0; line-height: 1.4; }
+  .headline-dot { display: inline-block; width: 4px; height: 4px; background: white; border-radius: 50%; margin-right: 6px; vertical-align: middle; opacity: 0.6; }
 </style>
 </head>
 <body>
@@ -167,6 +180,23 @@
   </div>
 
   <div id="error-container"></div>
+
+  <div class="briefing-card" id="briefing-card">
+    <div class="briefing-title">Good morning, Sashankh</div>
+    <div class="briefing-text loading" id="briefing-text">Tap the button to get your morning briefing...</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="play-btn" id="play-btn" onclick="getBriefing()">
+        <div class="play-icon" id="play-icon"></div>
+        <span id="play-label">Get briefing</span>
+      </button>
+      <button class="play-btn" id="stop-btn" onclick="stopSpeech()" style="display:none;">
+        <div class="stop-icon"></div>
+        <span>Stop</span>
+      </button>
+    </div>
+    <div class="briefing-headlines" id="briefing-headlines" style="display:none;"></div>
+  </div>
+
 
   <div class="stat-grid">
     <div class="stat"><div class="stat-label">Active goals</div><div class="stat-val" id="kpi-goals">—</div><div class="stat-sub">in progress</div></div>
@@ -543,6 +573,101 @@ async function saveTask() {
     btn.textContent = 'Save to Notion';
   }
 }
+
+
+let isSpeaking = false;
+let briefingLoaded = false;
+
+async function getBriefing() {
+  const btn = document.getElementById('play-btn');
+  const label = document.getElementById('play-label');
+  const textEl = document.getElementById('briefing-text');
+
+  if (isSpeaking) { stopSpeech(); return; }
+
+  if (briefingLoaded) {
+    speakText(textEl.textContent);
+    return;
+  }
+
+  btn.disabled = true;
+  label.textContent = 'Generating...';
+  textEl.textContent = 'Fetching your tasks and news...';
+  textEl.classList.add('loading');
+
+  try {
+    const res = await fetch('/api/notion?action=getBriefing');
+    const data = await res.json();
+
+    if (data.error) throw new Error(data.error);
+
+    textEl.textContent = data.briefing;
+    textEl.classList.remove('loading');
+    briefingLoaded = true;
+
+    if (data.headlines && data.headlines.length > 0) {
+      const hlEl = document.getElementById('briefing-headlines');
+      hlEl.style.display = 'block';
+      hlEl.innerHTML = data.headlines.map(h =>
+        `<div class="headline-item"><span class="headline-dot"></span>${h}</div>`
+      ).join('');
+    }
+
+    speakText(data.briefing);
+  } catch(err) {
+    textEl.textContent = 'Could not load briefing. Check your API keys.';
+    textEl.classList.add('loading');
+  } finally {
+    btn.disabled = false;
+    label.textContent = 'Play again';
+  }
+}
+
+function speakText(text) {
+  if (!('speechSynthesis' in window)) {
+    alert('Text-to-speech is not supported in this browser. Try Chrome or Safari.');
+    return;
+  }
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.rate = 0.95;
+  utterance.pitch = 1;
+  utterance.volume = 1;
+
+  const voices = window.speechSynthesis.getVoices();
+  const preferred = voices.find(v => v.name.includes('Google') && v.lang.startsWith('en')) ||
+                    voices.find(v => v.lang.startsWith('en-IN')) ||
+                    voices.find(v => v.lang.startsWith('en'));
+  if (preferred) utterance.voice = preferred;
+
+  utterance.onstart = () => {
+    isSpeaking = true;
+    document.getElementById('stop-btn').style.display = 'flex';
+    document.getElementById('play-btn').style.display = 'none';
+  };
+  utterance.onend = () => {
+    isSpeaking = false;
+    document.getElementById('stop-btn').style.display = 'none';
+    document.getElementById('play-btn').style.display = 'flex';
+    document.getElementById('play-label').textContent = 'Play again';
+  };
+  utterance.onerror = () => {
+    isSpeaking = false;
+    document.getElementById('stop-btn').style.display = 'none';
+    document.getElementById('play-btn').style.display = 'flex';
+  };
+
+  window.speechSynthesis.speak(utterance);
+}
+
+function stopSpeech() {
+  window.speechSynthesis.cancel();
+  isSpeaking = false;
+  document.getElementById('stop-btn').style.display = 'none';
+  document.getElementById('play-btn').style.display = 'flex';
+}
+
+window.speechSynthesis.onvoiceschanged = () => {};
 
 loadData();
 
