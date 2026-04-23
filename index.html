@@ -914,6 +914,16 @@ async function handleJarvisAction(action, data) {
       await loadData();
     } catch(e) {}
   }
+  if (action === 'addHabit') {
+    try {
+      await fetch('/api/notion?action=addHabit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      await loadData();
+    } catch(e) {}
+  }
   if (action === 'toggleTask') {
     await toggleTask(data.pageId, data.done);
   }
