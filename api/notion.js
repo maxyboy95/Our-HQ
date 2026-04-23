@@ -264,6 +264,55 @@ module.exports = async (req, res) => {
       return res.status(200).json({ briefing, todayTasks, overdueTasks, habits, headlines, debug: { claudeStatus: claudeRes.status, hasContent: !!(claudeData.content && claudeData.content.length) } });
     }
 
+        if (action === 'jarvis') {
+      const { message, history, context } = req.body;
+
+      const systemPrompt = 'You are J.A.R.V.I.S., the AI assistant from Iron Man. Speak with sophisticated British wit, precision and dry intelligence. Address Sashankh as "sir". You have full knowledge of his goals, tasks and habits. You can take actions by including a JSON block at the end of your response in this exact format if needed: ACTION:{"action":"addTask","actionData":{"name":"task name","assignee":"Sashankh","dueDate":"2026-04-23"}} or ACTION:{"action":"reload"} or ACTION:{"action":"toggleTask","actionData":{"pageId":"id","done":true}}. Only include ACTION if the user explicitly asks you to do something. Keep responses under 100 words unless asked for detail.';
+
+      const contextSummary = 'Current date: ' + context.dayName + ', ' + context.dateStr + '. ' +
+        'Active goals: ' + context.goals.map(g => g.name + ' (' + g.owner + ')').join(', ') + '. ' +
+        'Pending tasks: ' + context.tasks.filter(t => !t.done).map(t => t.name + ' assigned to ' + t.assignedTo + (t.dueDate ? ' due ' + t.dueDate : '')).join(', ') + '. ' +
+        'Daily habits: ' + context.habits.map(h => h.name).join(', ') + '.';
+
+      const messages = [
+        { role: 'user', content: 'Context: ' + contextSummary },
+        { role: 'assistant', content: 'Understood sir. I have your current status loaded and am ready to assist.' },
+        ...history.slice(-8),
+        { role: 'user', content: message }
+      ];
+
+      const claudeRes = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-5',
+          max_tokens: 400,
+          system: systemPrompt,
+          messages
+        })
+      });
+
+      const claudeData = await claudeRes.json();
+      let fullReply = claudeData.content && claudeData.content[0] ? claudeData.content[0].text : 'My apologies sir, I seem to be experiencing a systems issue.';
+
+      let reply = fullReply;
+      let actionObj = null;
+
+      const actionMatch = fullReply.match(/ACTION:(\{.*\})/);
+      if (actionMatch) {
+        try {
+          actionObj = JSON.parse(actionMatch[1]);
+          reply = fullReply.replace(/ACTION:\{.*\}/, '').trim();
+        } catch(e) {}
+      }
+
+      return res.status(200).json({ reply, action: actionObj ? actionObj.action : null, actionData: actionObj ? actionObj.actionData : null });
+    }
+
         return res.status(400).json({ error: 'Unknown action' });
 
   } catch (err) {
